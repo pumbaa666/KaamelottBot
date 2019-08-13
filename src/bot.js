@@ -15,6 +15,7 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 const base_url = "http://pumbaa.ch/public/kaamelott/";
+var isBotPlayingSound = false;
 
 async function start() {
     try {
@@ -39,7 +40,7 @@ async function parseSoundJson() {
 }
 
 function startBot(sounds) {
-    const bot = new Discord.Client(); 
+    const bot = new Discord.Client();
     bot.login(auth.token);
 
     bot.on('ready', function (evt) {
@@ -62,8 +63,13 @@ function startBot(sounds) {
                 case 'kaamelot':
                 case 'kamelott':
                 case 'kaamelott':
+                    if(isBotPlayingSound){
+                        message.channel.send("Molo fiston, j'ai pas fini la dernière commande !");
+                        break;
+                    }
+
                     if(words.length == 1) { // Pas d'arguments après 'kaamelott'
-                        message.channel.send(base_url + sounds[getRandomInt(sounds.length - 1)].file);
+                        sendMessage(message, "", base_url + sounds[getRandomInt(sounds.length - 1)].file);
                     }
                     else { // des arguments
                         words.shift();
@@ -80,19 +86,20 @@ function startBot(sounds) {
                         });
 
                         if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
-                            message.channel.send("Je n'ai rien trouvé, désolé :( Mais écoute quand même ça : " +
-                                base_url + sounds[getRandomInt(sounds.length - 1)].file);
+                            sendMessage(message,
+                                    "Je n'ai rien trouvé, désolé :( Mais écoute quand même ça : ",
+                                    base_url + sounds[getRandomInt(sounds.length - 1)].file
+                                );
                         }
                         else { // On a trouvé des trucs, on en envoie 1 au pif
                             var warning = "";
                             if(results.length > 1) {
-                                warning = results.length + " résultats, tient, prend celui-là : "
+                                warning = results.length + " résultats, tiens, prend celui-là : "
                             }
-                            message.channel.send(warning + base_url + results[getRandomInt(results.length)].file);
+                            sendMessage(message, warning, base_url + results[getRandomInt(results.length)].file);
                         }
                     }
                 break;
-    
             }
          }
     });
@@ -100,6 +107,31 @@ function startBot(sounds) {
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
+}
+
+function sendMessage(message, str, audioFile) {
+    message.channel.send(str + audioFile);
+
+    var voiceChannel = message.member.voiceChannel;
+    if(!voiceChannel) {
+        return;
+    }
+
+    const audio = audioFile; // Make it const to be available on "then" part
+    isBotPlayingSound = true;
+    voiceChannel
+        .join()
+        .then(connection => {
+            logger.debug("connected to audio channel");
+            const dispatcher = connection.playFile(audio);
+            dispatcher.on("end", end => {
+                voiceChannel.leave();
+                isBotPlayingSound = false;
+            });
+        })
+        .catch(err => {
+            logger.error(err)
+        });
 }
 
 start();
