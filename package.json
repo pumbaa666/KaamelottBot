@@ -1,0 +1,12 @@
+{
+	"name": "kaamelott_bot",
+	"version": "1.0.0",
+	"description": "My First Discord Bot, dedicated to Kaamelott",
+	"main": "bot.js",
+	"author": "Pumbaa",
+	"dependencies": {
+		"winston": "3.2.1",
+		"discord.js": "11.5.1",
+		"superagent": "5.1.0"
+	}
+}
