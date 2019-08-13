@@ -111,7 +111,11 @@ function getRandomInt(max) {
 
 function sendMessage(message, str, audioFile) {
     message.channel.send(str + audioFile);
+    playAudio(message, audioFile);
+}
 
+// https://stackoverflow.com/questions/41580798/how-to-play-audio-file-into-channel
+function playAudio(message, audioFile) {
     var voiceChannel = message.member.voiceChannel;
     if(!voiceChannel) {
         return;
