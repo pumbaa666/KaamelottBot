@@ -1,10 +1,14 @@
 // https://www.digitaltrends.com/gaming/how-to-make-a-discord-bot/
 // Code totalement faux mais le reste du setup est OK
 
+
+// TODO Tu sais que t'as des bots de musique  qui sont des users qui join ton chan vocal et qui envoient des sons youtube que tu lui demande
+
 const Discord = require("discord.js"); 
 const auth = require('../secret/auth.json');
 const superagent = require('superagent');
 const logger = require('winston');
+
 logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, {
     colorize: true
@@ -76,10 +80,15 @@ function startBot(sounds) {
                         });
 
                         if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
-                            message.channel.send(base_url + sounds[getRandomInt(sounds.length - 1)].file);
+                            message.channel.send("Je n'ai rien trouvé, désolé :( Mais écoute quand même ça : " +
+                                base_url + sounds[getRandomInt(sounds.length - 1)].file);
                         }
                         else { // On a trouvé des trucs, on en envoie 1 au pif
-                            message.channel.send(base_url + results[getRandomInt(results.length - 1)].file);
+                            var warning = "";
+                            if(results.length > 1) {
+                                warning = results.length + " résultats, tient, prend celui-là : "
+                            }
+                            message.channel.send(warning + base_url + results[getRandomInt(results.length)].file);
                         }
                     }
                 break;
