@@ -2,7 +2,7 @@
 // Code totalement faux mais le reste du setup est OK
 
 const Discord = require("discord.js"); 
-const auth = require('./auth.json');
+const auth = require('../secret/auth.json');
 const superagent = require('superagent');
 const logger = require('winston');
 logger.remove(logger.transports.Console);
