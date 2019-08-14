@@ -151,6 +151,7 @@ async function playAudio(message, baseUrl, fileName) {
     }
     catch(e) {
         logger.error(e);
+	    console.log(e);
         isBotPlayingSound = false;
     }
 }
