@@ -7,14 +7,15 @@
 const Discord = require("discord.js"); 
 const auth = require('../secret/auth.json');
 const superagent = require('superagent');
+const fs = require('fs');
 const logger = require('winston');
-
 logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, {
     colorize: true
 });
 logger.level = 'debug';
-const base_url = "http://pumbaa.ch/public/kaamelott/";
+
+const baseUrl = "http://pumbaa.ch/public/kaamelott/";
 var isBotPlayingSound = false;
 
 async function start() {
@@ -55,7 +56,7 @@ function startBot(sounds) {
            
             switch(firstWord) {
                 case 'chut':
-                    message.channel.send(base_url + "mais_arretez_de_discutailler_cinq_minutes.mp3"); 
+                    message.channel.send(baseUrl + "mais_arretez_de_discutailler_cinq_minutes.mp3"); 
                 break;
     
                 case 'k':
@@ -69,7 +70,7 @@ function startBot(sounds) {
                     }
 
                     if(words.length == 1) { // Pas d'arguments après 'kaamelott'
-                        sendMessage(message, "", base_url + sounds[getRandomInt(sounds.length - 1)].file);
+                        sendMessage(message, "", baseUrl, sounds[getRandomInt(sounds.length - 1)].file);
                     }
                     else { // des arguments
                         words.shift();
@@ -88,7 +89,7 @@ function startBot(sounds) {
                         if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
                             sendMessage(message,
                                     "Je n'ai rien trouvé, désolé :( Mais écoute quand même ça : ",
-                                    base_url + sounds[getRandomInt(sounds.length - 1)].file
+                                    baseUrl, sounds[getRandomInt(sounds.length - 1)].file
                                 );
                         }
                         else { // On a trouvé des trucs, on en envoie 1 au pif
@@ -96,7 +97,7 @@ function startBot(sounds) {
                             if(results.length > 1) {
                                 warning = results.length + " résultats, tiens, prend celui-là : "
                             }
-                            sendMessage(message, warning, base_url + results[getRandomInt(results.length)].file);
+                            sendMessage(message, warning, baseUrl, results[getRandomInt(results.length)].file);
                         }
                     }
                 break;
@@ -109,33 +110,49 @@ function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
 
-function sendMessage(message, str, audioFile) {
-    message.channel.send(str + audioFile);
-    playAudio(message, audioFile);
+function sendMessage(message, str, baseUrl, fileName) {
+    message.channel.send(str + baseUrl + fileName);
+    playAudio(message, baseUrl, fileName);
 }
 
 // https://stackoverflow.com/questions/41580798/how-to-play-audio-file-into-channel
-function playAudio(message, audioFile) {
-    var voiceChannel = message.member.voiceChannel;
+async function playAudio(message, baseUrl, fileName) {
+    const voiceChannel = message.member.voiceChannel;
     if(!voiceChannel) {
         return;
     }
 
-    const audio = audioFile; // Make it const to be available on "then" part
     isBotPlayingSound = true;
-    voiceChannel
-        .join()
-        .then(connection => {
-            logger.debug("connected to audio channel");
-            const dispatcher = connection.playFile(audio);
-            dispatcher.on("end", end => {
-                voiceChannel.leave();
-                isBotPlayingSound = false;
-            });
-        })
-        .catch(err => {
-            logger.error(err)
+    const c_fileName = fileName;
+
+    // Download audio file to local because connection.playFile won't
+    // play distant file despite what the doc says.
+    try {
+        if(!fs.existsSync("./sounds/" + fileName)) {
+            logger.debug("downloading " + "./sounds/" + fileName);
+            const file = fs.createWriteStream("./sounds/" + fileName);
+            await (superagent.get(baseUrl + fileName).pipe(file));
+        }
+
+        const connection = await voiceChannel.join();
+        logger.debug("connected to audio channel");
+
+        // It is recommended to change the volume, because the default of 1 is usually too loud.
+        // (A reasonable setting is 0.25 or “-6dB”).
+        // https://discordv8.readthedocs.io/en/latest/docs_voiceconnection.html
+        // playRawStream doesn't exist !
+        const dispatcher = connection.playFile("./sounds/" + c_fileName, {volume: "0.5"}); // Doesn't work with await
+        
+        dispatcher.on("end", end => {
+            voiceChannel.leave();
+            isBotPlayingSound = false;
+            logger.debug("disconnected");
         });
+    }
+    catch(e) {
+        logger.error(e);
+        isBotPlayingSound = false;
+    }
 }
 
 start();
