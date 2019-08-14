@@ -61,3 +61,4 @@ typings/
 .next
 /auth.json
 /secret/auth.json
+/sounds/*.mp3
