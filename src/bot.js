@@ -123,7 +123,6 @@ async function playAudio(message, baseUrl, fileName) {
     }
 
     isBotPlayingSound = true;
-    const c_fileName = fileName;
 
     // Download audio file to local because connection.playFile won't
     // play distant file despite what the doc says.
@@ -141,12 +140,15 @@ async function playAudio(message, baseUrl, fileName) {
         // (A reasonable setting is 0.25 or “-6dB”).
         // https://discordv8.readthedocs.io/en/latest/docs_voiceconnection.html
         // playRawStream doesn't exist !
-        const dispatcher = connection.playFile("./sounds/" + c_fileName, {volume: "0.5"}); // Doesn't work with await
+        const dispatcher = connection.playFile("./sounds/" + fileName, {volume: "0.5"}); // Doesn't work with await
         
         dispatcher.on("end", end => {
-            voiceChannel.leave();
-            isBotPlayingSound = false;
-            logger.debug("disconnected");
+            // https://stackoverflow.com/questions/50771121/bot-does-not-finish-playing-audio-before-leaving
+            setTimeout(function(){
+                voiceChannel.leave();
+                isBotPlayingSound = false;
+                logger.debug("disconnected");
+            }, 2000)
         });
     }
     catch(e) {
