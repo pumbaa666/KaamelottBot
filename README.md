@@ -4,7 +4,7 @@ curl -sL https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh -o
 chmod +x install_nvm.sh\
 ./install_nvm.sh\
 nvm install 8\
-nvm use 8\
+nvm use 8
 
 nvm --version\
 #0.33.11
@@ -34,4 +34,4 @@ ffmpeg -version\
 #ffmpeg version 3.2.14-1~deb9u1 Copyright (c) 2000-2019 the FFmpeg developers
 
 npm install\
-npm start\
+npm start
