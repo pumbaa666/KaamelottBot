@@ -140,15 +140,12 @@ async function playAudio(message, baseUrl, fileName) {
         // (A reasonable setting is 0.25 or “-6dB”).
         // https://discordv8.readthedocs.io/en/latest/docs_voiceconnection.html
         // playRawStream doesn't exist !
-        const dispatcher = connection.playFile("./sounds/" + fileName, {volume: "0.5"}); // Doesn't work with await
+        const dispatcher = connection.playStream("./sounds/" + fileName, {volume: "0.5"}); // Doesn't work with await
         
         dispatcher.on("end", end => {
-            // https://stackoverflow.com/questions/50771121/bot-does-not-finish-playing-audio-before-leaving
-            setTimeout(function(){
-                voiceChannel.leave();
-                isBotPlayingSound = false;
-                logger.debug("disconnected");
-            }, 2000)
+            voiceChannel.leave();
+            isBotPlayingSound = false;
+            logger.debug("disconnected");
         });
     }
     catch(e) {
