@@ -1,9 +1,6 @@
 // https://www.digitaltrends.com/gaming/how-to-make-a-discord-bot/
 // Code totalement faux mais le reste du setup est OK
 
-
-// TODO Tu sais que t'as des bots de musique  qui sont des users qui join ton chan vocal et qui envoient des sons youtube que tu lui demande
-
 const Discord = require("discord.js"); 
 const auth = require('../secret/auth.json');
 const superagent = require('superagent');
@@ -31,7 +28,7 @@ async function start() {
 }
 
 async function parseSoundJson() {
-    const url = "http://pumbaa.ch/public/kaamelott/sounds.json";
+    const url = baseUrl + "sounds.json";
     const sounds = await superagent.get(url);
     if(!sounds.body || !Array.isArray(sounds.body)) {
         logger.error("There is no sound array at that url " + url);
@@ -50,59 +47,61 @@ function startBot(sounds) {
     
     bot.on("message", (message) => {
         const messageStr = message.content;
-        if (messageStr.substring(0, 1) == '!') {
-            const words = messageStr.substring(1).split(" ");
-            const firstWord = words[0];
-           
-            switch(firstWord) {
-                case 'chut':
-                    message.channel.send(baseUrl + "mais_arretez_de_discutailler_cinq_minutes.mp3"); 
+        if (messageStr.substring(0, 1) != '!') {
+            break;
+        }
+        const words = messageStr.substring(1).split(" ");
+
+        switch(words[0]) {
+            case 'chut':
+                message.channel.send(baseUrl + "mais_arretez_de_discutailler_cinq_minutes.mp3"); 
                 break;
-    
-                case 'k':
-                case 'kamelot':
-                case 'kaamelot':
-                case 'kamelott':
-                case 'kaamelott':
-                    if(isBotPlayingSound){
-                        message.channel.send("Molo fiston, j'ai pas fini la dernière commande !");
-                        break;
-                    }
 
-                    if(words.length == 1) { // Pas d'arguments après 'kaamelott'
-                        sendMessage(message, "", baseUrl, sounds[getRandomInt(sounds.length - 1)].file);
-                    }
-                    else { // des arguments
-                        words.shift();
-                        const argument = words.join(" ").toLowerCase();
-                        const results = [];
+            case 'k':
+            case 'kamelot':
+            case 'kaamelot':
+            case 'kamelott':
+            case 'kaamelott':
+                if(isBotPlayingSound){
+                    message.channel.send("Molo fiston, j'ai pas fini la dernière commande !");
+                    break;
+                }
 
-                        sounds.forEach(sound => {
-                            if( sound.character.toLowerCase().includes(argument) ||
-                                sound.episode.toLowerCase().includes(argument) ||
-                                sound.file.toLowerCase().includes(argument) ||
-                                sound.title.toLowerCase().includes(argument)) {
-                                    results.push(sound);
-                            }
-                        });
+                if(words.length == 1) { // Pas d'arguments après 'kaamelott'
+                    sendMessage(message, "", baseUrl, sounds[getRandomInt(sounds.length - 1)].file);
+                    break;
+                }
 
-                        if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
-                            sendMessage(message,
-                                    "Je n'ai rien trouvé, désolé :( Mais écoute quand même ça : ",
-                                    baseUrl, sounds[getRandomInt(sounds.length - 1)].file
-                                );
-                        }
-                        else { // On a trouvé des trucs, on en envoie 1 au pif
-                            let warning = "";
-                            if(results.length > 1) {
-                                warning = results.length + " résultats, tiens, prend celui-là : "
-                            }
-                            sendMessage(message, warning, baseUrl, results[getRandomInt(results.length)].file);
-                        }
+                // Des arguments
+                words.shift(); // On supprime le 1er mot, c'était 'kaamelott'
+                const argument = words.join(" ").toLowerCase(); // On concatène les autres
+                const results = [];
+
+                sounds.forEach(sound => {
+                    if( sound.character.toLowerCase().includes(argument) ||
+                        sound.episode.toLowerCase().includes(argument) ||
+                        sound.file.toLowerCase().includes(argument) ||
+                        sound.title.toLowerCase().includes(argument)) {
+                            results.push(sound);
                     }
+                });
+
+                if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
+                    sendMessage(message,
+                            "Je n'ai rien trouvé, désolé :( Mais écoute quand même ça : ",
+                            baseUrl,
+                            sounds[getRandomInt(sounds.length)].file);
+                    break;
+                }
+                
+                // On a trouvé des trucs, on en envoie 1 au pif
+                let warning = "";
+                if(results.length > 1) {
+                    warning = results.length + " résultats, tiens, prend celui-là : "
+                }
+                sendMessage(message, warning, baseUrl, results[getRandomInt(results.length)].file);
                 break;
-            }
-         }
+        }
     });
 }
 
