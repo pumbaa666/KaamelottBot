@@ -16,7 +16,7 @@ logger.add(new logger.transports.Console, {
 logger.level = 'debug';
 
 const baseUrl = "http://pumbaa.ch/public/kaamelott/";
-var isBotPlayingSound = false;
+let isBotPlayingSound = false;
 
 async function start() {
     try {
@@ -93,7 +93,7 @@ function startBot(sounds) {
                                 );
                         }
                         else { // On a trouvé des trucs, on en envoie 1 au pif
-                            var warning = "";
+                            let warning = "";
                             if(results.length > 1) {
                                 warning = results.length + " résultats, tiens, prend celui-là : "
                             }
