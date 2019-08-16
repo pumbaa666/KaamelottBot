@@ -12,7 +12,7 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const baseUrl = "http://pumbaa.ch/public/kaamelott/";
+const baseUrl = "http://pumbaa.ch/public/kaamelott-soundboard/sounds/";
 let isBotPlayingSound = false;
 
 async function start() {
@@ -48,7 +48,7 @@ function startBot(sounds) {
     bot.on("message", (message) => {
         const messageStr = message.content;
         if (messageStr.substring(0, 1) != '!') {
-            break;
+            return;
         }
         const words = messageStr.substring(1).split(" ");
 
