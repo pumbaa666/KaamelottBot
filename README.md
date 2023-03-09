@@ -1,3 +1,15 @@
+Requirements
+===
+Node 12
+
+Easy mode : 
+===
+npm install
+apt-get install ffmpeg
+npm run start
+
+Hard mode : 
+===
 Only works with node 8.x\
 
 curl -sL https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh -o install_nvm.sh\
