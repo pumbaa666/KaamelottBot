@@ -13,12 +13,28 @@ i.e :
 # Bon ben révolte !
 ```
 
+Installing the Bot on your Discord channel
+---
+Open https://discord.com on your browser and login to your account.
+Update the following url with your application id instead of `<YOUR-APPLICATION-ID>`
+Browse `https://discordapp.com/oauth2/authorize?&client_id=<YOUR-APPLICATION-ID>&scope=bot&permissions=274881149184` and grant the permission.
+Type `!k poulette` in any channel
+
 How does it work
 ---
 When triggered with `!k` the bot will use the following words to search for an audio file who's name contains it.
 The files comes from http://pumbaa.ch/public/kaamelott/ (TODO use https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds ?)
 The file names and the full quotes are listed in https://github.com/2ec0b4/kaamelott-soundboard/blob/master/sounds/sounds.json
 It take a random quote from the result, download the audio locally, add 3 seconds of blank sound at the end (for some reason the Discord API disconnect too soon and truncate the end of the audio), save all these files in a cache folder and play the sound in the Discord audio-channel you're connected too.
+
+The cached files are stored under [KaamelottBot]\sounds
+`initial` store the original mp3 files
+`extended` are duplicates with 3 seconds of blank sound added at the end (dirty workaround for Discord API bug)
+You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot`.
+
+Hosting your own Server
+---
+You can host the server on your own machine and not depending on pumbaa.ch
 
 Server Requirements
 ---
@@ -28,6 +44,10 @@ Server Requirements
 
 Installing the Server
 ---
+**KaamelottBot**
+You will find the source here : https://github.com/pumbaa666/KaamelottBot.git
+`git clone https://github.com/pumbaa666/KaamelottBot.git`
+
 **Node** (with NVM, Node Version Manager)
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
@@ -76,7 +96,7 @@ Create a new Application on https://discord.com/developers/applications
 Note the `api-key` and `application id`.
 
 **Bot**
-Generate the `token` and save it to `[root]\secret\auth.json`
+Generate the `token` and save it to `[KaamelottBot]\secret\auth.json`
 ```
 {
     "token": "YOUR TOKEN"
@@ -91,10 +111,3 @@ Set `Presence intent`, `Server members intent`, `Message content intent under Bo
 *Bot persmissions* : 274881149184
 [Text] Send Messages, Send Messages in Threads, Embed Links, Read Message History,
 [Voice] Connect, Speak
-
-Installing the Bot on your Discord channel
----
-Open https://discord.com on your browser and login to your account.
-Update the following url with your application id instead of `<YOUR-APPLICATION-ID>`
-Browse `https://discordapp.com/oauth2/authorize?&client_id=<YOUR-APPLICATION-ID>&scope=bot&permissions=274881149184` and grant the permission.
-Type `!k poulette` in any channel
