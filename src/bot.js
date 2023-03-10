@@ -12,7 +12,7 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const baseUrl = "http://pumbaa.ch/public/kaamelott-soundboard/sounds/";
+const baseUrl = "http://pumbaa.ch/public/kaamelott/";
 let isBotPlayingSound = false;
 
 async function start() {
@@ -46,15 +46,15 @@ function startBot(sounds) {
     });
     
     bot.on("message", (message) => {
+        logger.debug('incoming message : '+message);
         const messageStr = message.content;
         if (messageStr.substring(0, 1) != '!') {
             return;
         }
         const words = messageStr.substring(1).split(" ");
-
         switch(words[0]) {
             case 'chut':
-                message.channel.send(baseUrl + "mais_arretez_de_discutailler_cinq_minutes.mp3"); 
+                // message.channel.send(baseUrl + "mais_arretez_de_discutailler_cinq_minutes.mp3"); // TODO
                 break;
 
             case 'k':
@@ -67,13 +67,13 @@ function startBot(sounds) {
                     break;
                 }
 
-                if(words.length == 1) { // Pas d'arguments après 'kaamelott'
+                if(words.length == 1) { // Pas d'arguments après 'kaamelott', on en file un au hasard
                     sendMessage(message, "", baseUrl, sounds[getRandomInt(sounds.length - 1)].file);
                     break;
                 }
 
                 // Des arguments
-                words.shift(); // On supprime le 1er mot, c'était 'kaamelott'
+                words.shift(); // On supprime le 1er mot, c'était 'kaamelott' (ou k, kamelot, ...)
                 const argument = words.join(" ").toLowerCase(); // On concatène les autres
                 const results = [];
 
@@ -121,30 +121,52 @@ async function playAudio(message, baseUrl, fileName) {
         return;
     }
 
+    if(isBotPlayingSound) {
+        logger.warn("I don't know how, but I'm already playing a sound. Aborting.")
+        return;
+    }
+
     isBotPlayingSound = true;
 
     // Download audio file to local because connection.playFile won't
     // play distant file despite what the doc says.
     try {
-        if(!fs.existsSync("./sounds/" + fileName)) {
-            logger.debug("downloading " + "./sounds/" + fileName);
-            const file = fs.createWriteStream("./sounds/" + fileName);
-            await (superagent.get(baseUrl + fileName).pipe(file));
+        const initialSoundDir = "./sounds/initial/";
+        const extendedSoundDir = "./sounds/extended/";
+        const extendedFileName = extendedSoundDir + fileName;
+        logger.debug("checking if extended file exists : " + extendedFileName);
+        if(!fs.existsSync(extendedFileName)) { // Check if we already have the extended version of the audio file
+            const initialFileName = initialSoundDir + fileName;
+            logger.debug("it does not, checking if initial file exists : " + initialFileName);
+            if(!fs.existsSync(initialFileName)) { // if not : check if we have the initial version
+                logger.debug("it does not, downloading it from " + baseUrl + fileName);
+                const file = fs.createWriteStream(initialFileName);
+                await (superagent.get(baseUrl + fileName).pipe(file)); // if not : download it
+            }
+            
+            // For some reason soxi fail to retrieve the sample rate and channels of a freshly downloaded file
+            // ... so we wait a bit
+            logger.debug("wait for it...");
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            logger.debug("adding blank to " + initialFileName);
+            addBlank(fileName); // and extend it
         }
 
         const connection = await voiceChannel.join();
-        logger.debug("connected to audio channel");
+        logger.info("connected to audio channel to play : " + extendedSoundDir + fileName);
 
         // It is recommended to change the volume, because the default of 1 is usually too loud.
         // (A reasonable setting is 0.25 or “-6dB”).
         // https://discordv8.readthedocs.io/en/latest/docs_voiceconnection.html
         // playRawStream doesn't exist !
-        const dispatcher = connection.playStream("./sounds/" + fileName, {volume: "0.5"}); // Doesn't work with await
+        const dispatcher = connection.playStream(extendedSoundDir + fileName, {volume: "0.5"});
         
         dispatcher.on("end", end => {
+            logger.debug("I'm leaving, now");
             voiceChannel.leave();
             isBotPlayingSound = false;
-            logger.debug("disconnected");
+            logger.debug("Vive Astier :)");
         });
     }
     catch(e) {
@@ -152,6 +174,28 @@ async function playAudio(message, baseUrl, fileName) {
 	    console.log(e);
         isBotPlayingSound = false;
     }
+}
+
+// Invoke bash script to add a blank line to the end of the file
+// TODO en faire une Promise ?
+function addBlank(fileName)
+{
+    const command = "bash"
+    const scriptDir = "./sounds/";
+    const scriptPath = scriptDir + "add-blank.sh";
+    const source = scriptDir + "initial";
+    const destination = scriptDir + "extended";
+    console.debug("launching "+command+" script : "+scriptPath+" with fileName : " + fileName + " source : " + source + " destination : " + destination);
+    const { exec } = require('child_process');
+    exec(command + ' ' + scriptPath + ' ' + fileName + ' ' + source + ' ' + destination, (err, stdout, stderr) => {
+        if (err) {
+            console.error(err)
+        } else {
+            // the *entire* stdout and stderr (buffered)
+            console.debug(`stdout: ${stdout}`);
+            console.error(`stderr: ${stderr}`);
+        }
+    });
 }
 
 start();
