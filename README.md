@@ -22,13 +22,13 @@ It take a random quote from the result, download the audio locally, add 3 second
 
 Server Requirements
 ---
-Node 12
-ffmpeg
-sox, soxi
+- Node 12
+- ffmpeg
+- sox, soxi
 
 Installing the Server
 ---
-Node (with NVM, Node Version Manager) :
+**Node** (with NVM, Node Version Manager)
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
@@ -42,7 +42,7 @@ node --version
 # v12.22.12
 ```
 
-FF-MPEG : 
+**FF-MPEG** 
 ```
 apt -y install ffmpeg
 ffmpeg -version
@@ -50,14 +50,14 @@ ffmpeg -version
 built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
 ```
 
-Sox : 
+**Sox**
 ```
 apt -y install sox
 sox --version
 # sox:      SoX v14.4.2
 ```
 
-Dependencies :
+**Dependencies**
 `npm install`
 
 Launching the Server
