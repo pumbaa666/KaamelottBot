@@ -42,7 +42,7 @@ function startBot(sounds) {
     bot.login(auth.token);
 
     bot.on('ready', function (evt) {
-        logger.info('Connected');
+        logger.info("KaamelottBot is live ! C'est quoi que t'as pas compris ?");
     });
     
     bot.on("message", (message) => {
