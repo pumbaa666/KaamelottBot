@@ -186,6 +186,8 @@ function addBlank(fileName)
     const source = scriptDir + "initial";
     const destination = scriptDir + "extended";
     console.debug("launching "+command+" script : "+scriptPath+" with fileName : " + fileName + " source : " + source + " destination : " + destination);
+
+    // https://medium.com/stackfame/how-to-run-shell-script-file-or-command-using-nodejs-b9f2455cb6b7
     const { exec } = require('child_process');
     exec(command + ' ' + scriptPath + ' ' + fileName + ' ' + source + ' ' + destination, (err, stdout, stderr) => {
         if (err) {

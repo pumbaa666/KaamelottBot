@@ -3,14 +3,22 @@ KAAMELOT DISCORD BOT
 
 What is it
 ---
-This bot plays audio file in Discord audio-channels
+My friends and I are huge fans of the french TV Series [**Kaamelott**](https://fr.wikipedia.org/wiki/Kaamelott) and we can't stop ourselves to quote infamous inside joke about/from the show.
+So when I stumbled upon [a repository](https://github.com/2ec0b4/kaamelott-soundboard) listing a bunch of quotes in small audio format I couldn't resist the urge to use it.
 
-TODO
+**KaamelottBot** is a silly bot who plays quotes in your current Discord audio-channel when you invoke it in any text-channel with `!k KEY-WORD`
+i.e : 
+```
+!k revolte
+# Bon ben révolte !
+```
 
-
-Write `!k KEY-WORD` in any text-channel to make it search the KEY-WORD into it's database and play an audio file in your current Discord audio-channel.
-i.e : `!k revolte`
- > Bon ben révolte !
+How does it work
+---
+When triggered with `!k` the bot will use the following words to search for an audio file who's name contains it.
+The files comes from http://pumbaa.ch/public/kaamelott/ (TODO use https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds ?)
+The file names and the full quotes are listed in https://github.com/2ec0b4/kaamelott-soundboard/blob/master/sounds/sounds.json
+It take a random quote from the result, download the audio locally, add 3 seconds of blank sound at the end (for some reason the Discord API disconnect too soon and truncate the end of the audio), save all these files in a cache folder and play the sound in the Discord audio-channel you're connected too.
 
 Server Requirements
 ---
@@ -89,4 +97,4 @@ Installing the Bot on your Discord channel
 Open https://discord.com on your browser and login to your account.
 Update the following url with your application id instead of `<YOUR-APPLICATION-ID>`
 Browse `https://discordapp.com/oauth2/authorize?&client_id=<YOUR-APPLICATION-ID>&scope=bot&permissions=274881149184` and grant the permission.
-
+Type `!k poulette` in any channel
