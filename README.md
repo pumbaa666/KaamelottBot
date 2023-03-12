@@ -18,7 +18,7 @@ Installing the Bot on your Discord channel
 ---
 Open https://discord.com on your browser and login to your account.
 
-Browse `https://discordapp.com/oauth2/authorize?&client_id=610852695128932362&scope=bot&permissions=274881149184` and grant the permission.
+Browse https://discordapp.com/oauth2/authorize?&client_id=610852695128932362&scope=bot&permissions=274881149184 and grant the permission.
 (Replace the `client_id` with yours if you run your own server)
 
 Type `!k poulette` in any channel
