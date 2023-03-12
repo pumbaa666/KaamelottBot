@@ -7,6 +7,7 @@ My friends and I are huge fans of the french TV Series [**Kaamelott**](https://f
 So when I stumbled upon [a repository](https://github.com/2ec0b4/kaamelott-soundboard) listing a bunch of quotes in small audio format I couldn't resist the urge to use it.
 
 **KaamelottBot** is a silly bot who plays quotes in your current Discord audio-channel when you invoke it in any text-channel with `!k KEY-WORD`
+
 i.e : 
 ```
 !k revolte
@@ -16,6 +17,7 @@ i.e :
 Installing the Bot on your Discord channel
 ---
 Open https://discord.com on your browser and login to your account.
+
 Browse `https://discordapp.com/oauth2/authorize?&client_id=610852695128932362&scope=bot&permissions=274881149184` and grant the permission.
 (Replace the `client_id` with yours if you run your own server)
 
@@ -26,13 +28,19 @@ Type `!k poulette` in any channel
 How does it work
 ---
 When triggered with `!k` the bot will use the following words to search for an audio file who's name contains it.
+
 The files comes from http://pumbaa.ch/public/kaamelott/ (TODO use https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds ?)
+
 The file names and the full quotes are listed in https://github.com/2ec0b4/kaamelott-soundboard/blob/master/sounds/sounds.json
+
 It take a random quote from the result, download the audio locally, add 3 seconds of blank sound at the end (for some reason the Discord API disconnect too soon and truncate the end of the audio), save all these files in a cache folder and play the sound in the Discord audio-channel you're connected too.
 
 The cached files are stored under [KaamelottBot]\sounds
-`initial` store the original mp3 files
-`extended` are duplicates with 3 seconds of blank sound added at the end (dirty workaround for Discord API bug)
+
+`initial` store the original mp3 files.
+
+`extended` are duplicates with 3 seconds of blank sound added at the end.
+
 You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot`.
 
 Hosting your own Server
@@ -41,7 +49,7 @@ You can host the server on your own machine and not depending on pumbaa.ch
 
 Server Requirements
 ---
-- Node 12
+- node 12, nvm
 - ffmpeg
 - sox, soxi
 
@@ -75,13 +83,19 @@ built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
 
 **Sox**
 ```
-apt -y install sox
+apt -y install sox libsox-fmt-mp3
 sox --version
 # sox:      SoX v14.4.2
 ```
 
 **Dependencies**
-`npm install`
+```
+#npm install -g node-gyp-install
+#npm install -g node-gyp
+#npm install -g npm-install-peers
+npm install --save-dev @discordjs/uws@^10.149.0
+npm install
+```
 
 Launching the Server
 ---
