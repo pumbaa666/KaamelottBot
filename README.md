@@ -125,6 +125,6 @@ Set `Presence intent`, `Server members intent`, `Message content intent under Bo
 **OAuth2, General**
 *Authorization method* : In-app Authorization
 *Scope* : bot
-*Bot persmissions* : 274881149184
+*Bot permissions* : 274881149184
 [Text] Send Messages, Send Messages in Threads, Embed Links, Read Message History,
 [Voice] Connect, Speak
