@@ -116,6 +116,7 @@ Note the `api-key` and `application id`.
 Generate the `token` and save it to `[KaamelottBot]\secret\auth.json`
 ```
 {
+    "client_id": "YOUR APPLICATION ID",
     "token": "YOUR TOKEN"
 }
 ```
