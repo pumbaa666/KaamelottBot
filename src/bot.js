@@ -2,7 +2,7 @@
 // Code totalement faux mais le reste du setup est OK
 
 const Discord = require("discord.js"); 
-const auth = require('../secret/auth.json');
+const { token } = require('../secret/auth.json');
 const superagent = require('superagent');
 const fs = require('fs');
 const logger = require('winston');
@@ -37,9 +37,10 @@ async function parseSoundJson() {
     return sounds.body;
 }
 
+// TODO MAJ le code pour refleter la dernière version de Discord.js, avec les Interactions et les Slash Commands
 function startBot(sounds) {
     const bot = new Discord.Client();
-    bot.login(auth.token);
+    bot.login(token);
 
     bot.on('ready', function (evt) {
         logger.info("KaamelottBot is live ! C'est quoi que t'as pas compris ?");
