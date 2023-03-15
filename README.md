@@ -33,11 +33,11 @@ The files comes from [kaamelott-soundboard GitHub](https://github.com/2ec0b4/kaa
 
 The file names and the full quotes are listed in [a JSON file](https://github.com/2ec0b4/kaamelott-soundboard/blob/master/sounds/sounds.json) (again, copy on [pumbaa.ch](http://pumbaa.ch/public/kaamelott/sounds.json))
 
-It take a random quote from the result, download the audio locally, add 3 seconds of blank sound at the end (for some reason the Discord API disconnect too soon and truncate the end of the audio), save all these files in a cache folder and play the sound in the Discord audio-channel you're connected too.
+It take a random quote from the result, cache the audio locally and play the sound in the Discord audio-channel you're connected too.
 
-The cached files are stored under [KaamelottBot]\sounds\cache
+The cached files are stored under `KaamelottBot/sounds/cache`
 
-You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot`.
+You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot/sounds/cache`.
 
 Hosting your own Server
 ---
@@ -52,6 +52,7 @@ Server Requirements
 Installing the Server
 ---
 **KaamelottBot**
+
 You will find the source here : https://github.com/pumbaa666/KaamelottBot.git
 ```
 git clone https://github.com/pumbaa666/KaamelottBot.git
@@ -63,6 +64,7 @@ cp secret/auth-dev.json secret/auth-prod.json
 (See bellow for `auth-prod.json` content)
 
 **Node** (with NVM, Node Version Manager)
+
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
@@ -77,6 +79,7 @@ node --version
 ```
 
 **FF-MPEG** 
+
 ```
 apt -y install ffmpeg
 ffmpeg -version
@@ -85,6 +88,7 @@ built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
 ```
 
 **Sox**
+
 ```
 apt -y install sox libsox-fmt-mp3
 sox --version
@@ -104,10 +108,12 @@ Open https://discord.com on your browser and login to your account
 Create a new Application on https://discord.com/developers/applications
 
 **General Information**
+
 Note the `application id`, it's your `client_id` (same as in tab `OAuth2/General`).
 
 **Bot**
-Generate the `token` and save it to `[KaamelottBot]\secret\auth-prod.json` (duplicate it from `auth-dev.json`)
+
+Generate the `token` and save it to `KaamelottBot/secret/auth-prod.json` (duplicate it from `auth-dev.json`)
 ```
 {
     "client_id": "YOUR-CLIENT-ID / APPLICATION-ID",
@@ -118,6 +124,7 @@ Generate the `token` and save it to `[KaamelottBot]\secret\auth-prod.json` (dupl
 Enable `Presence intent`, `Server members intent`, `Message content intent`.
 
 **OAuth2, General**
+
 *Authorization method* : In-app Authorization
 *Scope* : bot, applications.commands
 *Bot permissions* : 2150713344
