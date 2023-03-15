@@ -64,5 +64,5 @@ typings/
 
 # next.js build output
 .next
-/auth-prod.json
 /sounds/cache/
+secret/auth-prod.json
