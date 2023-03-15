@@ -1,7 +1,3 @@
-sounds/initial/*.mp3
-sounds/extended/*.mp3
-sounds/blank/*.mp3
-
 # Logs
 logs
 *.log
@@ -64,5 +60,5 @@ typings/
 
 # next.js build output
 .next
-/sounds/cache/
+/sounds/cache/*.mp3
 secret/auth-prod.json
