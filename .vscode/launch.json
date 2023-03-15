@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Debug Kaamelott",
             "program": "${workspaceFolder}/src/bot.js"
         }
     ]

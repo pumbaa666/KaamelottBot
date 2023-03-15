@@ -6,40 +6,36 @@ What is it
 My friends and I are huge fans of the french TV Series [**Kaamelott**](https://fr.wikipedia.org/wiki/Kaamelott) and we can't stop ourselves to quote infamous inside joke about/from the show.
 So when I stumbled upon [a repository](https://github.com/2ec0b4/kaamelott-soundboard) listing a bunch of quotes in small audio format I couldn't resist the urge to use it.
 
-**KaamelottBot** is a silly bot who plays quotes in your current Discord audio-channel when you invoke it in any text-channel with `!k KEY-WORD`
+**KaamelottBot** is a silly bot who plays quotes in your current Discord audio-channel when you invoke it in any text-channel with `/kaamelott (+option)`
 
 i.e : 
 ```
-!k revolte
-# Bon ben révolte !
+/kaamelott revolte
+# Bon ben révolte ! TUUUUUUUUT !!
 ```
 
 Installing the Bot on your Discord channel
 ---
 Open https://discord.com on your browser and login to your account.
 
-Browse https://discordapp.com/oauth2/authorize?&client_id=610852695128932362&scope=bot&permissions=274881149184 and grant the permission.
+Browse https://discordapp.com/oauth2/authorize?&client_id=610852695128932362&scope=bot&permissions=2150713344 and grant the permission.
 (Replace the `client_id` with yours if you run your own server)
 
-Type `!k poulette` in any channel
+Type `/kaamelott poulette` in any channel
 
 
 
 How does it work
 ---
-When triggered with `!k` the bot will use the following words to search for an audio file who's name contains it.
+When triggered with `/kaamelott` the bot will use the following words to search for an audio file who's name contains it.
 
-The files comes from http://pumbaa.ch/public/kaamelott/ (TODO use https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds ?)
+The files comes from [kaamelott-soundboard GitHub](https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds) (a copy exists on [pumbaa.ch](http://pumbaa.ch/public/kaamelott/))
 
-The file names and the full quotes are listed in https://github.com/2ec0b4/kaamelott-soundboard/blob/master/sounds/sounds.json
+The file names and the full quotes are listed in [a JSON file](https://github.com/2ec0b4/kaamelott-soundboard/blob/master/sounds/sounds.json) (again, copy on [pumbaa.ch](http://pumbaa.ch/public/kaamelott/sounds.json))
 
 It take a random quote from the result, download the audio locally, add 3 seconds of blank sound at the end (for some reason the Discord API disconnect too soon and truncate the end of the audio), save all these files in a cache folder and play the sound in the Discord audio-channel you're connected too.
 
-The cached files are stored under [KaamelottBot]\sounds
-
-`initial` store the original mp3 files.
-
-`extended` are duplicates with 3 seconds of blank sound added at the end.
+The cached files are stored under [KaamelottBot]\sounds\cache
 
 You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot`.
 
@@ -49,7 +45,7 @@ You can host the server on your own machine and not depending on pumbaa.ch
 
 Server Requirements
 ---
-- node 12, nvm
+- node 19, nvm
 - ffmpeg
 - sox, soxi
 
@@ -68,9 +64,9 @@ export NVM_DIR="$HOME/.nvm"
 nvm --version
 # 0.39.3
 
-nvm install 12
+nvm install 19
 node --version
-# v12.22.12
+# v19.7.0
 ```
 
 **FF-MPEG** 
@@ -110,22 +106,22 @@ Open https://discord.com on your browser and login to your account
 Create a new Application on https://discord.com/developers/applications
 
 **General Information**
-Note the `api-key` and `application id`.
+Note the `application id`, it's your `client_id` (same as in tab `OAuth2/General`).
 
 **Bot**
-Generate the `token` and save it to `[KaamelottBot]\secret\auth.json`
+Generate the `token` and save it to `[KaamelottBot]\secret\auth-prod.json` (duplicate it from `auth-dev.json`)
 ```
 {
-    "client_id": "YOUR APPLICATION ID",
-    "token": "YOUR TOKEN"
+    "client_id": "YOUR-CLIENT-ID / APPLICATION-ID",
+    "token": "YOUR-APPLICATION-TOKEN"
 }
 ```
 
-Set `Presence intent`, `Server members intent`, `Message content intent under Bot`.
+Enable `Presence intent`, `Server members intent`, `Message content intent`.
 
 **OAuth2, General**
 *Authorization method* : In-app Authorization
-*Scope* : bot
-*Bot permissions* : 274881149184
-[Text] Send Messages, Send Messages in Threads, Embed Links, Read Message History,
+*Scope* : bot, applications.commands
+*Bot permissions* : 2150713344
+[Text] Send Messages, Embed Links, Read Message History, Use Slash Commands
 [Voice] Connect, Speak

@@ -37,7 +37,8 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
+node_modules*
+package-lock.json_*
 jspm_packages/
 
 # TypeScript v1 declaration files
@@ -63,6 +64,5 @@ typings/
 
 # next.js build output
 .next
-/auth.json
-/secret/auth.json
-/sounds/*.mp3
+/auth-prod.json
+/sounds/cache/
