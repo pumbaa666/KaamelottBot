@@ -1,5 +1,6 @@
 // https://discord.com/developers/docs/interactions/application-commands
-
+// Basic Bot (mon usage) https://github.com/discordjs/voice-examples/blob/main/basic/src/adapter.ts
+// Radio Bot : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 
 // https://discord.com/developers/docs/resources/channel#channel-object-channel-types
 const CHAT_INPUT = 1;
@@ -195,10 +196,10 @@ async function kaamelott(interaction, sounds, player) {
     // On a trouvé des trucs, on en envoie 1 au pif
     let warning = "";
     if(results.length > 1) {
-        warning = "1 résultat parmi " + results.length + ". Prends celui-ci au hasard :"
+        warning = "1 résultat parmi " + results.length
     }
     
-    playAudioSafe(voiceChannel, interaction, player, baseUrl, result, results[getRandomInt(results.length)]);
+    playAudioSafe(voiceChannel, interaction, player, baseUrl, results[getRandomInt(results.length)], warning);
 
     return;
 }
@@ -240,24 +241,22 @@ async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, 
         filepath = fullUrl;
     }
 
-    const exampleEmbed = new EmbedBuilder()
+    // https://discordjs.guide/popular-topics/embeds.html#using-the-embed-constructor
+    const exampleEmbed = new EmbedBuilder() // TODO rename
         .setColor(0x0099FF)
         .setTitle((sound.file).substring(0, 255))
         .setURL(fullUrl)
-        // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
-        .setDescription(result.title)
+        .setAuthor({ name: 'by Pumbaa', iconURL: 'https://avatars.githubusercontent.com/u/34394718?v=4', url: 'https://github.com/pumbaa666' })
+        .setDescription(sound.title)
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         .addFields(
-            { name: 'Episode', value: result.episode },
-            { name: 'Personnages', value: result.character },
-            // { name: 'Warning', value: warning },
-        //     { name: 'Inline field title', value: 'Some value here', inline: true },
-        //     { name: 'Inline field title', value: 'Some value here', inline: true },
+            { name: 'Episode', value: sound.episode , inline: false},
+            { name: 'Personnages', value: sound.character , inline: false},
+            { name: 'Warning', value: warning },
         )
-        // .addFields({ name: 'Inline field title', value: 'Some value here', inline: true })
-        // .setImage('https://i.imgur.com/AfFp7pu.png')
+        // .setImage('https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon.png')
         // .setTimestamp()
-        .setFooter({ text: 'Vive Astier', iconURL: 'https://i.imgur.com/AfFp7pu.png' }); // TODO icon
+        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' });
 
     await interaction.reply({ embeds: [exampleEmbed] });
 
