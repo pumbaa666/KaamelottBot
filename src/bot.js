@@ -242,7 +242,8 @@ async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, 
     }
 
     // https://discordjs.guide/popular-topics/embeds.html#using-the-embed-constructor
-    const exampleEmbed = new EmbedBuilder() // TODO rename
+    logger.debug("Sending embed to user. Episode : " + sound.episode + ", Personnages : " + sound.character + ", Warning : " + warning);
+    const reply = new EmbedBuilder()
         .setColor(0x0099FF)
         .setTitle((sound.file).substring(0, 255))
         .setURL(fullUrl)
@@ -252,13 +253,16 @@ async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, 
         .addFields(
             { name: 'Episode', value: sound.episode , inline: false},
             { name: 'Personnages', value: sound.character , inline: false},
-            { name: 'Warning', value: warning },
         )
         // .setImage('https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon.png')
         // .setTimestamp()
         .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' });
 
-    await interaction.reply({ embeds: [exampleEmbed] });
+        if(warning != "") {
+            reply.addFields({ name: 'Warning', value: warning, inline: false});
+        }
+
+    await interaction.reply({ embeds: [reply] });
 
     // Play audio file
     try {
