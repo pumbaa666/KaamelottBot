@@ -53,7 +53,14 @@ Installing the Server
 ---
 **KaamelottBot**
 You will find the source here : https://github.com/pumbaa666/KaamelottBot.git
-`git clone https://github.com/pumbaa666/KaamelottBot.git`
+```
+git clone https://github.com/pumbaa666/KaamelottBot.git
+cd KaamelottBot
+npm install --save-dev @discordjs/uws@^10.149.0 # Or npm install -g npm-install-peers
+npm install
+cp secret/auth-dev.json secret/auth-prod.json
+```
+(See bellow for `auth-prod.json` content)
 
 **Node** (with NVM, Node Version Manager)
 ```
@@ -82,15 +89,6 @@ built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
 apt -y install sox libsox-fmt-mp3
 sox --version
 # sox:      SoX v14.4.2
-```
-
-**Dependencies**
-```
-#npm install -g node-gyp-install
-#npm install -g node-gyp
-#npm install -g npm-install-peers
-npm install --save-dev @discordjs/uws@^10.149.0
-npm install
 ```
 
 Launching the Server

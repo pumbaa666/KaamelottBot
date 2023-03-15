@@ -264,7 +264,6 @@ async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, 
 
     await interaction.reply({ embeds: [reply] });
 
-    // Play audio file
     try {
         playAudio(voiceChannel, player, filepath);
     } catch(error) {
