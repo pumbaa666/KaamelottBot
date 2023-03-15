@@ -2,16 +2,17 @@
 // Basic Bot (mon usage) https://github.com/discordjs/voice-examples/blob/main/basic/src/adapter.ts
 // Radio Bot : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 
+const superagent = require('superagent');
+const fs = require('fs');
+const path = require('path');
+const { client_id, token } = require('../secret/auth-prod.json');
+
 // https://discord.com/developers/docs/resources/channel#channel-object-channel-types
 const CHAT_INPUT = 1;
 const GUILD_VOICE = 2
 const STRING = 3;
-
 const { REST, Routes } = require('discord.js');
 const { EmbedBuilder } = require('discord.js');
-
-const superagent = require('superagent');
-const fs = require('fs');
 const { Client, Constants } = require("discord.js");
 const { GatewayIntentBits } = require("discord-api-types/v10");
 const {
@@ -23,8 +24,8 @@ const {
 	VoiceConnectionStatus,
 	joinVoiceChannel,
 } = require("@discordjs/voice");
-const { client_id, token } = require('../secret/auth-prod.json');
 
+// TODO aussi logger dans un fichier. Et que ça marche avec le service.
 const logger = require('winston');
 logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, {
@@ -32,7 +33,11 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const baseUrl = "http://pumbaa.ch/public/kaamelott/"
+// TODO proposer des options précises : Titre, Personnage, Episode, etc. Et ne chercher que là dedans (et pas dans le nom du fichier)
+
+// TODO ajouter un bouton pour relancer la commande
+
+const baseUrl = "http://pumbaa.ch/public/kaamelott/" // TODO remplacer par kaamelott-soundboard
 // const baseUrl = "https://raw.githubusercontent.com/2ec0b4/kaamelott-soundboard/master/sounds/"; // a (unsynched) backup exists on http://pumbaa.ch/public/kaamelott/
 let isBotPlayingSound = false;
 
@@ -177,20 +182,19 @@ async function kaamelott(interaction, sounds, player) {
     const options = interaction.options.data.map(option => option.value);
     logger.debug('option : '+options);
     
-    if(options.length == 0) { // Pas d'arguments, on en file un au hasard
+    if(options.length == 0) { // Pas d'option, on en file un au hasard
         playAudioSafe(voiceChannel, interaction, player, baseUrl, sounds[getRandomInt(sounds.length - 1)]);
         return;
     }
 
-    // Des arguments
-    const argument = options.join(" ").toLowerCase(); // On concatène les options
+    // Des options
+    // const argument = options.join(" ").toLowerCase(); // On concatène les options
     const results = [];
 
     sounds.forEach(sound => {
-        if( sound.character.toLowerCase().includes(argument) ||
-            sound.episode.toLowerCase().includes(argument) ||
-            sound.file.toLowerCase().includes(argument) ||
-            sound.title.toLowerCase().includes(argument)) {
+        if( sound.character.toLowerCase().includes(options) ||
+            sound.episode.toLowerCase().includes(options) ||
+            sound.title.toLowerCase().includes(options)) {
                 results.push(sound);
         }
     });
@@ -232,7 +236,10 @@ async function connectToChannel(channel) {
 async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, warning = "") {
     const filename = sound.file;
     let fullUrl = baseUrl + filename;
-    const cacheDirectory = "./sounds/cache/";
+
+    // Get current file absolute path
+    const currentFilePath = path.resolve(__dirname);
+    const cacheDirectory = currentFilePath + "/../sounds/cache/";
     const filepath = cacheDirectory + filename;
 
     // Cache files
@@ -301,9 +308,14 @@ function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
 
-// Clear local cached files // TODO
+// Clear local cached files
 function clearCache() {
-    
+    // TODO
+}
+
+function refreshSoundsList() {
+    // TODO
+    // Sinon faut restart le serveur pour MAJ la liste des sons quand y'a une MAJ du github kaamelott-soundboard
 }
 
 start();

@@ -18,7 +18,7 @@ Installing the Bot on your Discord channel
 ---
 Open https://discord.com on your browser and login to your account.
 
-Browse https://discordapp.com/oauth2/authorize?&client_id=610852695128932362&scope=bot&permissions=2150713344 and grant the permission.
+Browse https://discordapp.com/oauth2/authorize?&client_id=610852695128932362&scope=bot&permissions=277028653120 and grant the permission.
 (Replace the `client_id` with yours if you run your own server)
 
 Type `/kaamelott poulette` in any channel
@@ -102,6 +102,30 @@ npm start
 # KaamelottBot is live !
 ```
 
+**As a service**
+
+```
+which node # Note the absolute path of the node executable
+pwd # Note the absolute path of the KaamelotBot directory
+# You will use them in the following file :
+sudo vi /etc/systemd/system/kaamelott_bot.service
+```
+
+```
+[Unit]
+Description=Discord Kaamelott Bot
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /home/$USER/KaamelottBot/src/bot.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+`sudo systemctl start kaamelott_bot.service`
+
 Creating and configuring the Bot
 ---
 Open https://discord.com on your browser and login to your account
@@ -127,6 +151,6 @@ Enable `Presence intent`, `Server members intent`, `Message content intent`.
 
 *Authorization method* : In-app Authorization
 *Scope* : bot, applications.commands
-*Bot permissions* : 2150713344
-[Text] Send Messages, Embed Links, Read Message History, Use Slash Commands
+*Bot permissions* : 277028653120
+[Text] Send Messages, Send Messages in Threads, Embed Links, Attach Files, Read Message History, Add Reactions, Use Slash Commands
 [Voice] Connect, Speak
