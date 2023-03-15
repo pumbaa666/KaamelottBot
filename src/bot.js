@@ -32,7 +32,8 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const baseUrl = "https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds/"; // a (unsynched) backup exists on http://pumbaa.ch/public/kaamelott/
+const baseUrl = "http://pumbaa.ch/public/kaamelott/"
+// const baseUrl = "https://raw.githubusercontent.com/2ec0b4/kaamelott-soundboard/master/sounds/"; // a (unsynched) backup exists on http://pumbaa.ch/public/kaamelott/
 let isBotPlayingSound = false;
 
 async function start() {
