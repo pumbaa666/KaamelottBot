@@ -32,7 +32,7 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const baseUrl = "https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds"; // a (unsynched) backup exists on http://pumbaa.ch/public/kaamelott/
+const baseUrl = "https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds/"; // a (unsynched) backup exists on http://pumbaa.ch/public/kaamelott/
 let isBotPlayingSound = false;
 
 async function start() {
@@ -134,12 +134,18 @@ function startBot(sounds, player) {
         switch(interaction.commandName) {
             case 'ping': await interaction.reply('Pong!'); break;
             case 'kaamelott': await kaamelott(interaction, sounds, player); break;
+            // case 'kaamelottGif': await kaamelottGif(interaction, gifs); break; // TODO
         }
     });
     
     client.login(token);
 }
 
+// TODO
+async function kaamelottGifs(interaction, gifs, player) {
+}
+
+// TODO rename kaamelottAudio
 async function kaamelott(interaction, sounds, player) {
     logger.debug("YOU RAAAAANG ???");
     if(isBotPlayingSound) {
