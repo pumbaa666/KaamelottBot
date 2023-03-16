@@ -26,9 +26,7 @@ const {
 const logger = require('./logger');
 logger.level = 'debug';
 
-// TODO proposer des options précises : Titre, Personnage, Episode, etc. Et ne chercher que là dedans (et pas dans le nom du fichier)
 // TODO ajouter un bouton pour relancer la commande
-// TODO backuper un coup les sons sur pumbaa.ch 
 // TODO ajouter une option --silent pour ne pas jouer le son mais juste afficher la carte.
 // TODO bouton pour stoper le son en cours
 
@@ -83,13 +81,27 @@ async function registerSlashCommands() {
                     channel_type: GUILD_VOICE,
                     
                 },
-                // {
-                //     name: 'title',
-                //     description: 'Search only in the title',
-                //     type: STRING,
-                //     required: false,
-                //     channel_type: GUILD_VOICE,
-                // }
+                {
+                    name: 'title',
+                    description: 'Search only in the text of the quote (yeah, the parameter name is awful, I know)',
+                    type: STRING,
+                    required: false,
+                    channel_type: GUILD_VOICE,
+                },
+                {
+                    name: 'character',
+                    description: 'Search only when this character speaks',
+                    type: STRING,
+                    required: false,
+                    channel_type: GUILD_VOICE,
+                },
+                {
+                    name: 'episode',
+                    description: 'Search only in the title of the episode',
+                    type: STRING,
+                    required: false,
+                    channel_type: GUILD_VOICE,
+                }
             ]
         }
     ];
@@ -203,9 +215,20 @@ async function kaamelott(interaction, sounds, player) {
     }
     logger.debug("connected to voice channel : " + interaction.member?.voice.channel.name)
 
-    // Get the options (if any)
-    const options = interaction.options.data.map(option => option.value);
-    logger.debug('option : '+options);
+    // Get the options and subcommand (if any)
+    const options = interaction.options.data.map(option => option.value); // TODO fuzzy search (ne pas compter les accents par ex)
+    let subCommand = "";
+    let subValue = "";
+    if(Array.isArray(interaction.options._hoistedOptions) && interaction.options._hoistedOptions.length > 0) {
+        // subCommand = interaction.options._hoistedOptions[0].options.map(option => option.name);
+        // subValue = interaction.options._hoistedOptions[0].options.map(option => option.value);
+        subCommand = interaction.options._hoistedOptions[0].name.toLowerCase();
+        subValue = interaction.options._hoistedOptions[0].value.toLowerCase(); // TODO fuzzy search
+        if(subCommand == "anything") subCommand = "";
+    }
+    
+
+    logger.debug('option : '+options, 'subCommand : '+subCommand, 'subValue : '+subValue);
     
     if(options.length == 0) { // Pas d'option, on en file un au hasard
         playAudioSafe(voiceChannel, interaction, player, baseUrl, sounds[getRandomInt(sounds.length - 1)]);
@@ -216,18 +239,27 @@ async function kaamelott(interaction, sounds, player) {
     const optionsInline = options.join(" ").toLowerCase(); // On concatène les options
     const results = [];
 
-    sounds.forEach(sound => {
-        if( sound.character.toLowerCase().includes(options) ||
-            sound.episode.toLowerCase().includes(options) ||
-            sound.title.toLowerCase().includes(options)) {
+    // Search anywhere
+    if(subCommand == "") {
+        sounds.forEach(sound => {
+            if( sound.character.toLowerCase().includes(options) ||
+                sound.episode.toLowerCase().includes(options) ||
+                sound.title.toLowerCase().includes(options)) {
+                    results.push(sound);
+            }
+        });
+    } else { // Search only in one field
+        sounds.forEach(sound => {
+            if(sound[subCommand].toLowerCase().includes(subValue)) {
                 results.push(sound);
-        }
-    });
+            }
+        });
+    }
 
     let warning = "";
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
         warning = "Aucun résultat, j'en file un au hasard";
-        playAudioSafe(voiceChannel, interaction, player, baseUrl, sounds[getRandomInt(sounds.length)], warning, optionsInline);
+        playAudioSafe(voiceChannel, interaction, player, baseUrl, sounds[getRandomInt(sounds.length)], warning, optionsInline, subCommand);
         return;
     }
     
@@ -235,7 +267,7 @@ async function kaamelott(interaction, sounds, player) {
         warning = "1 résultat parmi " + results.length
     }
     
-    playAudioSafe(voiceChannel, interaction, player, baseUrl, results[getRandomInt(results.length)], warning, optionsInline);
+    playAudioSafe(voiceChannel, interaction, player, baseUrl, results[getRandomInt(results.length)], warning, optionsInline, subCommand);
 
     return;
 }
@@ -258,7 +290,7 @@ async function connectToChannel(channel) {
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, warning = "", options = null) {
+async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, warning = "", options = null, subCommand = null) {
     const filename = sound.file;
     let fullUrl = baseUrl + filename;
 
@@ -288,17 +320,17 @@ async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, 
         .setURL(fullUrl)
         .setAuthor({ name: 'by Pumbaa', iconURL: 'https://avatars.githubusercontent.com/u/34394718?v=4', url: 'https://github.com/pumbaa666' })
         .setDescription(sound.title)
-        // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         .addFields(
             { name: 'Episode', value: sound.episode , inline: true},
             { name: 'Personnages', value: sound.character , inline: true},
         )
+        // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         // .setImage('https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon.png')
-        // .setTimestamp()
         .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' });
 
         if(options != null) {
-            reply.addFields({ name: 'Mot-clé', value: options, inline: false});
+            let subcommand = subCommand ? " (in " + subCommand + ")" : "";
+            reply.addFields({ name: 'Mot-clé', value: options + subcommand, inline: false});
         }
         if(warning != "") {
             reply.addFields({ name: 'Warning', value: warning, inline: false});
