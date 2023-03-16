@@ -76,12 +76,20 @@ async function registerSlashCommands() {
             type: CHAT_INPUT,
             options: [
                 {
-                    name: 'keyword',
-                    description: 'The keyword to search for. Can be a character, an episode, a quote, or a sound file name',
+                    name: 'anything',
+                    description: 'The keyword to search for. Can be a character, an episode or a quote',
                     type: STRING,
                     required: false,
                     channel_type: GUILD_VOICE,
-                }
+                    
+                },
+                // {
+                //     name: 'title',
+                //     description: 'Search only in the title',
+                //     type: STRING,
+                //     required: false,
+                //     channel_type: GUILD_VOICE,
+                // }
             ]
         }
     ];
