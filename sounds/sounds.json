@@ -3958,5 +3958,23 @@
         "episode": "Livre III, 50 - Chante Sloubi",
         "file": "chante_sloubi.mp3",
         "title": "Comme vous êtes second, vous avez plus que dix-neuf solutions possibles : soit vous passez ; soit vous sciez en deux les cinquante poutrelles de trente pieds, mais ça c'est quand on joue avec les bouts de bois. Sinon c'est les relances : doublette ; jeu carré ; jeu de piste ; jeu gagnant ; jeu moulin ; jeu-jeu ; joue-jeu ; joue-joue ; joue-jié ; joue-ganou ; gagnar ; catakt ; tacat ; cacatac ; cagat-cata et ratacat-mic. Ou : chante Sloubi. Nous, on va faire que chante Sloubi."
+    },
+    {
+        "character": "Gauvain",
+        "episode": "Livre III, 77 - Arthur In Love",
+        "file": "chante_sloubi.mp3",
+        "title": "Qu'est-ce que c'est que ça ? Je cligne de l'oeil mon oncle. Rendez-vous compte, hier encore j'en étais incapable."
+    },
+    {
+        "character": "Le roi burgonde",
+        "episode": "Livre IV, 63 - Le Jeu de la guerre",
+        "file": "jouer_guerre_salsifi.mp3",
+        "title": "Jouer ! Guerre ! Salsifis !"
+    },
+    {
+        "character": "Le roi burgonde",
+        "episode": "Livre IV, 63 - Le Jeu de la guerre",
+        "file": "fruit_au_sirop.mp3",
+        "title": "j apprécie les fruits au sirop !"
     }
 ]
