@@ -237,7 +237,7 @@ async function kaamelott(interaction, sounds, player) {
     }
 
     // Des options
-    // const argument = options.join(" ").toLowerCase(); // On concatène les options
+    const optionsInline = options.join(" ").toLowerCase(); // On concatène les options
     const results = [];
 
     sounds.forEach(sound => {
@@ -248,18 +248,18 @@ async function kaamelott(interaction, sounds, player) {
         }
     });
 
+    let warning = "";
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
-        playAudioSafe(voiceChannel, interaction, player, baseUrl, sounds[getRandomInt(sounds.length)]);
+        warning = "Aucun résultat, j'en file un au hasard";
+        playAudioSafe(voiceChannel, interaction, player, baseUrl, sounds[getRandomInt(sounds.length)], warning, optionsInline);
         return;
     }
     
-    // On a trouvé des trucs, on en envoie 1 au pif
-    let warning = "";
-    if(results.length > 1) {
+    if(results.length > 1) { // On a trouvé des trucs, on en envoie 1 au bol
         warning = "1 résultat parmi " + results.length
     }
     
-    playAudioSafe(voiceChannel, interaction, player, baseUrl, results[getRandomInt(results.length)], warning);
+    playAudioSafe(voiceChannel, interaction, player, baseUrl, results[getRandomInt(results.length)], warning, optionsInline);
 
     return;
 }
@@ -282,7 +282,7 @@ async function connectToChannel(channel) {
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, warning = "") {
+async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, warning = "", options = null) {
     const filename = sound.file;
     let fullUrl = baseUrl + filename;
 
@@ -314,13 +314,16 @@ async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, 
         .setDescription(sound.title)
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         .addFields(
-            { name: 'Episode', value: sound.episode , inline: false},
-            { name: 'Personnages', value: sound.character , inline: false},
+            { name: 'Episode', value: sound.episode , inline: true},
+            { name: 'Personnages', value: sound.character , inline: true},
         )
         // .setImage('https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon.png')
         // .setTimestamp()
         .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' });
 
+        if(options != null) {
+            reply.addFields({ name: 'Mot-clé', value: options, inline: false});
+        }
         if(warning != "") {
             reply.addFields({ name: 'Warning', value: warning, inline: false});
         }
