@@ -25,69 +25,14 @@ const {
 	joinVoiceChannel,
 } = require("@discordjs/voice");
 
-// TODO mettre ça dans un fichier séparé
-// https://stackoverflow.com/questions/46658040/winston-is-not-writing-logs-to-files
-const winston = require('winston');
-const env = process.env.NODE_ENV;
-const now = new Date().toISOString();
-const datePattern = "DD-MM-yyyy";
-const logFormat = winston.format.printf(function(info) {
-  return `${now}-${info.level}: ${JSON.stringify(info.message, null, 4)}\n`;
-});
-const logger = winston.createLogger({
-    transports: [
-        new winston.transports.File({
-            name: 'error-file',
-            filename: 'logs/kaamelott-bot.errors',
-            level: 'error',
-            json: false,
-        }),
-
-        new (require('winston-daily-rotate-file'))({
-            filename: 'logs/kaamelott-bot.log',
-            level: env === 'development' ? 'debug' : 'info',
-            timestamp: now,
-            datePattern: datePattern,
-            prepend: true,
-            format: logFormat,
-        }),
-
-        new (require('winston-daily-rotate-file'))({
-            filename: 'logs/kaamelott-bot.json',
-            level: env === 'development' ? 'debug' : 'info',
-            timestamp: now,
-            datePattern: datePattern,
-            prepend: true,
-            json: true,
-        }),
-
-        new (require('winston-daily-rotate-file'))({
-            filename: 'logs/kaamelott-bot.pretty',
-            level: env === 'development' ? 'debug' : 'info',
-            timestamp: now,
-            datePattern: datePattern,
-            prepend: true,
-            format: winston.format.combine(winston.format.colorize(), logFormat),
-        }),
-
-        // https://stackoverflow.com/questions/17963406/winston-doesnt-pretty-print-to-console
-        new (winston.transports.Console)({
-            name: "info-console",
-            level: "debug",
-            format: winston.format.combine(winston.format.colorize(), logFormat),
-        })
-    ],
-    exitOnError: false,
-  });
-
+const logger = require('./logger');
 logger.level = 'debug';
 
 // TODO proposer des options précises : Titre, Personnage, Episode, etc. Et ne chercher que là dedans (et pas dans le nom du fichier)
-
 // TODO ajouter un bouton pour relancer la commande
 
-const baseUrl = "http://pumbaa.ch/public/kaamelott/" // TODO remplacer par kaamelott-soundboard
-// const baseUrl = "https://raw.githubusercontent.com/2ec0b4/kaamelott-soundboard/master/sounds/"; // a (unsynched) backup exists on http://pumbaa.ch/public/kaamelott/
+const baseUrl = "https://raw.githubusercontent.com/2ec0b4/kaamelott-soundboard/master/sounds/";
+const fallbackBaseUrl = "http://pumbaa.ch/public/kaamelott/";
 let isBotPlayingSound = false;
 
 async function start() {
@@ -97,7 +42,7 @@ async function start() {
         return;
     }
 
-    const sounds = await parseSoundJson();
+    const sounds = await parseSoundJson(baseUrl);
     if(sounds == null) {
         logger.error("Error parsing sounds, aborting");
         return;
@@ -152,23 +97,44 @@ async function registerSlashCommands() {
     return false;
 }
 
-async function parseSoundJson() {
-    const url = baseUrl + "sounds.json";
-    let sounds = null;
+async function parseSoundJson(url) {
+    const fullUrl = url + "sounds.json";
+    let response = null;
 
     try {
-        sounds = await superagent.get(url);
+        response = await superagent.get(fullUrl);
     } catch (error) {
-        logger.error("Error while fetching sound at " + url);
+        logger.error("Error while fetching sound at " + fullUrl, error);
+
+        // Try again with the fallback url
+        if(url != fallbackBaseUrl) {
+            return parseSoundJson(fallbackBaseUrl);
+        }
+
         return null;
     }
 
-    if(sounds == null || !sounds.body || !Array.isArray(sounds.body)) {
-        logger.error("There is no sound array at that url " + url);
-        return null;
+    // The response is a JSON array, this is our episodes
+    if(response.body && Array.isArray(response.body)) {
+        return response.body;
     }
 
-    return sounds.body;
+    // Try again from response.text (dirty hack 'cause of github...)
+    if(response.text != null && response.text != "") {
+        const sounds = JSON.parse(response.text);
+        
+        if(sounds && Array.isArray(sounds)) {
+            return sounds;
+        }
+    }
+
+    // Try again with the fallback url
+    if(url != fallbackBaseUrl) {
+        return parseSoundJson(fallbackBaseUrl);
+    }
+
+    logger.error("There is no sound array at " + fullUrl);
+    return null;
 }
 
 function startBot(sounds, player) {
@@ -286,7 +252,7 @@ async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, 
     const filename = sound.file;
     let fullUrl = baseUrl + filename;
 
-    // Get current file absolute path
+    // Get current directory absolute path
     const currentFilePath = path.resolve(__dirname);
     const cacheDirectory = currentFilePath + "/../sounds/cache/";
     const filepath = cacheDirectory + filename;
