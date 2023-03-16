@@ -32,7 +32,7 @@ logger.level = 'debug';
 // TODO ajouter une option --silent pour ne pas jouer le son mais juste afficher la carte.
 // TODO bouton pour stoper le son en cours
 
-const baseUrl = "https://raw.githubusercontent.com/2ec0b4/kaamelott-soundboard/master/sounds/";
+const baseUrl = "https://raw.githubusercontent.com/crystalskunk/KaamelottBot/master/sounds/";
 const fallbackBaseUrl = "http://pumbaa.ch/public/kaamelott/";
 let isBotPlayingSound = false;
 
