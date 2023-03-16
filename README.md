@@ -18,7 +18,7 @@ Installing the Bot on your Discord channel
 ---
 Open https://discord.com on your browser and login to your account.
 
-Browse https://discordapp.com/oauth2/authorize?&client_id=610852695128932362&scope=bot&permissions=277028653120 and grant the permission.
+Browse https://discord.com/api/oauth2/authorize?client_id=610852695128932362&permissions=277028653120&scope=bot%20applications.commands and grant the permission.
 (Replace the `client_id` with yours if you run your own server)
 
 Type `/kaamelott poulette` in any channel
@@ -47,7 +47,6 @@ Server Requirements
 ---
 - node 19, nvm
 - ffmpeg
-- sox, soxi
 
 Installing the Server
 ---
@@ -87,14 +86,6 @@ ffmpeg -version
 built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
 ```
 
-**Sox**
-
-```
-apt -y install sox libsox-fmt-mp3
-sox --version
-# sox:      SoX v14.4.2
-```
-
 Launching the Server
 ---
 ```
@@ -124,7 +115,10 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-`sudo systemctl start kaamelott_bot.service`
+```
+sudo systemctl daemon-reload # Not mandatory on most case. But doesn't hurt.
+sudo systemctl start kaamelott_bot.service
+```
 
 Creating and configuring the Bot
 ---
@@ -140,7 +134,7 @@ Note the `application id`, it's your `client_id` (same as in tab `OAuth2/General
 Generate the `token` and save it to `KaamelottBot/secret/auth-prod.json` (duplicate it from `auth-dev.json`)
 ```
 {
-    "client_id": "YOUR-CLIENT-ID / APPLICATION-ID",
+    "client_id": "YOUR-CLIENT-ID",
     "token": "YOUR-APPLICATION-TOKEN"
 }
 ```

@@ -11,9 +11,7 @@ const { client_id, token } = require('../secret/auth-prod.json');
 const CHAT_INPUT = 1;
 const GUILD_VOICE = 2
 const STRING = 3;
-const { REST, Routes } = require('discord.js');
-const { EmbedBuilder } = require('discord.js');
-const { Client, Constants } = require("discord.js");
+const { REST, Routes, EmbedBuilder, Client } = require('discord.js');
 const { GatewayIntentBits } = require("discord-api-types/v10");
 const {
 	StreamType,
@@ -30,6 +28,9 @@ logger.level = 'debug';
 
 // TODO proposer des options précises : Titre, Personnage, Episode, etc. Et ne chercher que là dedans (et pas dans le nom du fichier)
 // TODO ajouter un bouton pour relancer la commande
+// TODO backuper un coup les sons sur pumbaa.ch 
+// TODO ajouter une option --silent pour ne pas jouer le son mais juste afficher la carte.
+// TODO bouton pour stoper le son en cours
 
 const baseUrl = "https://raw.githubusercontent.com/2ec0b4/kaamelott-soundboard/master/sounds/";
 const fallbackBaseUrl = "http://pumbaa.ch/public/kaamelott/";
@@ -44,9 +45,10 @@ async function start() {
 
     const sounds = await parseSoundJson(baseUrl);
     if(sounds == null) {
-        logger.error("Error parsing sounds, aborting");
+        logger.error("Error parsing sounds (see above), aborting");
         return;
     }
+    logger.info("Sounds parsed successfully : " + sounds.length + " episodes found.");
 
     const player = createAudioPlayer();
     if(player == null) {
@@ -254,7 +256,7 @@ async function playAudioSafe(voiceChannel, interaction, player, baseUrl, sound, 
 
     // Get current directory absolute path
     const currentFilePath = path.resolve(__dirname);
-    const cacheDirectory = currentFilePath + "/../sounds/cache/";
+    const cacheDirectory = currentFilePath + "/../sounds/";
     const filepath = cacheDirectory + filename;
 
     // Cache files
