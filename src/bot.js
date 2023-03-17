@@ -7,10 +7,10 @@ const fs = require('fs');
 const path = require('path');
 const { client_id, token } = require('../secret/auth-prod.json');
 
-// https://discord.com/developers/docs/resources/channel#channel-object-channel-types
-const CHAT_INPUT = 1;
+const CHAT_INPUT = 1; // https://discord.com/developers/docs/resources/channel#channel-object-channel-types
 const GUILD_VOICE = 2
-const STRING = 3;
+const STRING = 3; // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-type
+const BOOLEAN = 5;
 const { REST, Routes, EmbedBuilder, Client, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { GatewayIntentBits } = require("discord-api-types/v10");
 const {
@@ -102,9 +102,9 @@ async function registerSlashCommands() {
                     channel_type: GUILD_VOICE,
                 },
                 {
-                    name: 'silent',
+                    name: 'silencieux',
                     description: 'Do not play the sound, just display the quote',
-                    type: STRING,
+                    type: BOOLEAN,
                     required: false,
                     channel_type: GUILD_VOICE,
                 }
@@ -179,8 +179,8 @@ function startBot(sounds, player) {
         if (interaction.isChatInputCommand()) {
             switch(interaction.commandName) {
                 case 'ping': await interaction.reply('Pong!'); break;
-                case 'kaamelott': await kaamelott(interaction, sounds, player); break;
-                // case 'kaamelottGif': await kaamelottGif(interaction, gifs); break; // TODO
+                case 'kaamelott': await kaamelottAudio(interaction, sounds, player); break;
+                // case 'kaamelottGif': await kaamelottGif(interaction, gifs); break;
             }
 
             return;
@@ -219,8 +219,7 @@ function startBot(sounds, player) {
 async function kaamelottGifs(interaction, gifs, player) {
 }
 
-// TODO rename kaamelottAudio
-async function kaamelott(interaction, sounds, player) {
+async function kaamelottAudio(interaction, sounds, player) {
     logger.debug("YOU RAAAAANG ???");
     if(isBotPlayingSound) {
         await interaction.reply("Molo fiston, j'ai pas fini la dernière commande !");
@@ -229,23 +228,21 @@ async function kaamelott(interaction, sounds, player) {
     isBotPlayingSound = true;
     
     // Check if the user is in a voice channel
-    // TODO factoriser
     const channel = interaction.member?.voice.channel;
     if (!channel) {
-        logger.debug("User is not in a voice channel");
         await interaction.reply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
         isBotPlayingSound = false;
         return;
     }
 
-    // Get the options and subcommand (if any)
+    // Get the options and subcommands (if any)
     let silent = false;
     let options = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
     logger.debug('options : ', options);
 
-    let index = options.findIndex(opt => opt.name == "silent");
+    let index = options.findIndex(opt => opt.name == "silencieux");
     if(index != -1) {
-        silent = true;
+        silent = options[index].value;
         options.splice(index, 1);
     }
 
@@ -261,20 +258,27 @@ async function kaamelott(interaction, sounds, player) {
 
     // Des options.
     // Create a Set of unique results
-    let results = new Set();
+    let results = []; // new Set()
+    let warning = "";
 
-    // Search anywhere
-    const subCommand = options[0].name; // TODO
-    const subValue = options[0].value.toLowerCase();
-    if(subCommand == "" || subCommand == "tout") {
+    // If any options is "Tout", search anywhere and ignore other options
+    const allIndex = options.findIndex(opt => opt.name == "tout");    
+    if(allIndex != -1) {
+        const subValue = options[allIndex].value.toLowerCase();
+        if(options.length > 1) {
+            warning = warning + "J'ai ignoré les autres options car tu as demandé Tout.\n";
+            options = [options[allIndex]];
+        }
         sounds.forEach(sound => {
             if( sound.character.toLowerCase().includes(subValue) ||
                 sound.episode.toLowerCase().includes(subValue) ||
                 sound.title.toLowerCase().includes(subValue)) {
-                    results.add(sound);
+                    results.push(sound);
             }
         });
-    } else { // Search for each options with corresponding value
+    }
+        
+    else { // Search for each options with corresponding value
         const optionMapping = {
             "perso": "character",
             "titre": "episode",
@@ -306,18 +310,17 @@ async function kaamelott(interaction, sounds, player) {
         results = findArraysIntersection(firstArray, remainingArrays); 
     }
 
-    let warning = "";
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
-        warning = "Aucun résultat, j'en file un au hasard";
-        playAudioSafe(interaction, player, baseUrl, sounds[getRandomInt(sounds.length)], silent, warning, options, subCommand);
+        warning = warning + "Aucun résultat, j'en file un au hasard\n";
+        playAudioSafe(interaction, player, baseUrl, sounds[getRandomInt(sounds.length)], silent, warning, options);
         return;
     }
     
     if(results.length > 1) { // On a trouvé des trucs, on en envoie 1 au bol
-        warning = "1 résultat parmi " + results.length
+        warning = warning + "1 résultat parmi " + results.length + "\n";
     }
     
-    playAudioSafe(interaction, player, baseUrl, results[getRandomInt(results.length)], silent, warning, options, subCommand);
+    playAudioSafe(interaction, player, baseUrl, results[getRandomInt(results.length)], silent, warning, options);
 
     return;
 }
@@ -373,9 +376,10 @@ async function connectToChannel(channel) {
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function playAudioSafe(interaction, player, baseUrl, sound, silent = false, warning = "", options = null, subCommand = null) {
+async function playAudioSafe(interaction, player, baseUrl, sound, silent = false, warning = "", options = null) {
     if(sound == null || sound.file == null) {
-        logger.error("Sound is null or file is null, it should not happen. silent : " + silent + ", warning : " + warning + ", baseurl : " + baseUrl + ", sound : ", sound);
+        logger.error("Sound is null or file is null, it should not happen. warning : " + warning + ", sound : ", sound);
+        isBotPlayingSound = false;
         return;
     }
 
@@ -415,7 +419,7 @@ async function playAudioSafe(interaction, player, baseUrl, sound, silent = false
 
     
     if(options != null) {
-        const optionsInline = options.map(option => option.value).join(" ").toLowerCase() + (subCommand ? " (in " + subCommand + ")" : ""); // On concatène les options
+        const optionsInline = options.map(option => option.value).join(" ").toLowerCase() + " (in " + options.map(option => option.name).join(" ").toLowerCase() + ")"; // On concatène les options
         reply.addFields({ name: 'Mot-clé', value: optionsInline, inline: false});
     }
     if(warning != "") {
@@ -469,7 +473,6 @@ async function playAudio(interaction, player, filepath) {
 
     const channel = interaction.member?.voice.channel;
     if (!channel) {
-        logger.debug("User is not in a voice channel");
         await interaction.reply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
         isBotPlayingSound = false;
         return;
