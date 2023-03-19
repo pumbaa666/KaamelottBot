@@ -176,6 +176,7 @@ function startClient(sounds, player) {
         if (interaction.isButton()) {
             if(interaction.customId == 'stopCurrentSound') {
                 kaamelottbot.stopAudio(player);
+                interaction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
             }
             else if(interaction.customId.startsWith('replayAudio_')) {
                 const tempFilePath = interaction.customId.substring('replayAudio_'.length);
@@ -184,6 +185,7 @@ function startClient(sounds, player) {
                 
                 logger.debug("Replaying file " + filename);
                 kaamelottbot.playAudio(interaction, player, filename);
+                interaction.reply({ content: 'Replaying file ' + filename, ephemeral: true });
             }
 
             return;
