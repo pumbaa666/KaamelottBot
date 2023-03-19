@@ -18,38 +18,12 @@ const {
 
 let isBotPlayingSound = false;
 
-// Clear local cached files
-function clearCache(interaction) {
-    // demander confirmation en pressant sur un bouton
-    // seulement pour les admins
-
-    // Check if the user is an admin
-    if(!interaction.member.roles.cache.some(role => role.name === 'Admin')) {
-        interaction.reply("You're not an admin !");
-        return;
-    }
-
-    // TODO clearCache
-    const cacheDirectory = getCacheFilePath("");
-    
-}
-
-function refreshSoundsList() {
-    // TODO refreshSoundsList
-    // a relancer toutes les 24h
-    // Sinon faut restart le serveur pour MAJ la liste des sons quand y'a une MAJ du github kaamelott-soundboard
-}
-
 // Get current directory absolute path
 function getCacheFilePath(filename) {
     const currentFilePath = path.resolve(__dirname);
     const cacheDirectory = currentFilePath + "/../sounds/";
     const filepath = cacheDirectory + filename;
     return filepath;
-}
-
-// TODO kaamelottGifs
-async function kaamelottGifs(interaction, gifs, player) {
 }
 
 async function kaamelottAudio(interaction, sounds, player) {
@@ -150,7 +124,7 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
 
     const filename = sound.file;
     let fullUrl = baseUrl + filename;
-    let filepath = getCacheFilePath(filename);
+    const filepath = getCacheFilePath(filename);
 
     // Cache files
     try {
@@ -161,15 +135,10 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
         }
     } catch(error) {
         logger.warn("Error while trying to cache file at " + filepath + " : ", error);
-        logger.warn("Trying to play audio directly from source : " + fullUrl);
-        filepath = fullUrl;
     }
 
     // https://discordjs.guide/popular-topics/embeds.html#using-the-embed-constructor
-    logger.debug("Sending embed to user. Episode : " + sound.episode + ", Personnages : " + sound.character + ", Warning : " + warning);
-    // logger.debug("fullUrl : ", fullUrl);
-    // logger.debug("Options : ", options);
-    // logger.debug("Sound : ", sound);
+    logger.debug("Sending embed to user. Warning : " + warning + ", options : ", options);
     const reply = new EmbedBuilder()
         .setColor(0x0099FF)
         .setTitle((sound.file).substring(0, 255))
@@ -193,23 +162,23 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
         reply.addFields({ name: 'Warning', value: warning, inline: false});
     }
 
+    // Create a temp file to store the name of the audio file
+    // We will use this value to replay the audio when clicking on the button
+    // This is a bit messy but you can't set data in a button.
+    const tmpFilePath = '/tmp/kb-replay_' + `${Math.random().toString(36).substring(2, 16)}`;
+    fs.writeFileSync(tmpFilePath, filename);
+
     // Buttons to replay the command and stop the sound
     // https://discordjs.guide/interactions/buttons.html#building-and-sending-buttons
     // https://discord.js.org/#/docs/builders/main/class/ActionRowBuilder
     // https://discord.js.org/#/docs/builders/main/class/ButtonBuilder
     const rowButtons = new ActionRowBuilder()
         .addComponents(new ButtonBuilder()
-            .setCustomId('replayAudio_' + filename) // TODO trouver une autre astuce, le nom du fichier peut être trop long et la taille du customId est limitée à 100 caractères
+            .setCustomId('replayAudio_' + tmpFilePath)
             // .setLabel('Replay Audio')
             .setStyle(ButtonStyle.Success)
             .setEmoji('🔄')
         )
-        // .addComponents(new ButtonBuilder()
-        //     .setCustomId('replaySlashCommand')
-        //     // .setLabel('Replay command')
-        //     .setStyle(ButtonStyle.Success)
-        //     .setEmoji('🔄')
-        // )
         .addComponents(new ButtonBuilder()
             .setCustomId('stopCurrentSound')
             // .setLabel('Stop sound')
@@ -231,6 +200,23 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
         isBotPlayingSound = false;
         logger.error("Error while playing audio at " + filepath + " : ", error);
     }
+}
+
+async function connectToChannel(channel) {
+	const connection = joinVoiceChannel({
+		channelId: channel.id,
+		guildId: channel.guild.id,
+		// @ts-expect-error Currently voice is built in mind with API v10 whereas discord.js v13 uses API v9.
+		adapterCreator: channel.guild.voiceAdapterCreator,
+	});
+	try {
+		await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
+		return connection;
+	} catch (error) {
+        logger.error("Error connecting to voice channel : ", error);
+		connection.destroy();
+        return null;
+	}
 }
 
 async function playAudio(interaction, player, filename) {
@@ -274,24 +260,7 @@ async function playAudio(interaction, player, filename) {
 	return entersState(player, AudioPlayerStatus.Playing, 5000);
 }
 
-async function connectToChannel(channel) {
-	const connection = joinVoiceChannel({
-		channelId: channel.id,
-		guildId: channel.guild.id,
-		// @ts-expect-error Currently voice is built in mind with API v10 whereas discord.js v13 uses API v9.
-		adapterCreator: channel.guild.voiceAdapterCreator,
-	});
-	try {
-		await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
-		return connection;
-	} catch (error) {
-        logger.error("Error connecting to voice channel : ", error);
-		connection.destroy();
-        return null;
-	}
-}
-
-function stopSound(player)
+function stopAudio(player)
 {
     logger.debug("Stopping current sound");
     isBotPlayingSound = false;
@@ -304,10 +273,7 @@ function stopSound(player)
 }
 
 module.exports = {
-    clearCache,
-    refreshSoundsList,
-    kaamelottGifs,
     kaamelottAudio,
     playAudio,
-    stopSound
+    stopAudio
 }

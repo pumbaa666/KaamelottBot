@@ -4,23 +4,23 @@
 
 // TODO passer de js en ts
 
+const fs = require('fs');
 const superagent = require('superagent');
+const kaamelottbot = require('./kaamelott-audio');
 const { client_id, token } = require('../conf/auth-prod.json');
-const kaamelottbot = require('./kaamelott-bot');
 const { baseUrl, fallbackBaseUrl } = require('../conf/config');
+const { REST, Routes, Client } = require('discord.js');
+const {	createAudioPlayer } = require("@discordjs/voice");
+const logger = require('../conf/logger');
+logger.level = 'debug';
 
+const { GatewayIntentBits } = require("discord-api-types/v10");
 const CHAT_INPUT = 1; // https://discord.com/developers/docs/resources/channel#channel-object-channel-types
 const GUILD_VOICE = 2
 const STRING = 3; // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-type
 const BOOLEAN = 5;
-const { REST, Routes, Client } = require('discord.js');
-const { GatewayIntentBits } = require("discord-api-types/v10");
-const {	createAudioPlayer } = require("@discordjs/voice");
 
-const logger = require('../conf/logger');
-logger.level = 'debug';
-
-async function start() {
+async function startBot() {
     const slashCommandsResult = await registerSlashCommands();
     if(slashCommandsResult == false) {
         logger.error("Error registering Slash Commands, aborting");
@@ -41,10 +41,10 @@ async function start() {
     }
 
     try {
-        startBot(sounds, player);
+        startClient(sounds, player);
     }
     catch(error) {
-        logger.error("Error starting bot : ", error);
+        logger.error("Error starting client : ", error);
     }
 }
 
@@ -151,7 +151,7 @@ async function parseSoundJson(url) {
     return null;
 }
 
-function startBot(sounds, player) {
+function startClient(sounds, player) {
     const client = new Client({
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates],
     });
@@ -174,17 +174,14 @@ function startBot(sounds, player) {
 
         // The user clicked on a button
         if (interaction.isButton()) {
-            // switch(interaction.customId) {
-            //     case 'replayAudio': break;
-            //     case 'stopCurrentSound': break;
-            // }
             if(interaction.customId == 'stopCurrentSound') {
-                kaamelottbot.stopSound(player);
-            }
-            else if(interaction.customId == 'replaySlashCommand') { // TODO replaySlashCommand
+                kaamelottbot.stopAudio(player);
             }
             else if(interaction.customId.startsWith('replayAudio_')) {
-                const filename = interaction.customId.substring('replayAudio_'.length);
+                const tempFilePath = interaction.customId.substring('replayAudio_'.length);
+                // Use the content of the temp file as the filename
+                const filename = fs.readFileSync(tempFilePath, 'utf8');
+                
                 logger.debug("Replaying file " + filename);
                 kaamelottbot.playAudio(interaction, player, filename);
             }
@@ -196,4 +193,4 @@ function startBot(sounds, player) {
     client.login(token);
 }
 
-start();
+startBot();
