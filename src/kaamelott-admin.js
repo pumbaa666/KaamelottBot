@@ -14,12 +14,6 @@ function clearCache(interaction) {
     
 }
 
-function refreshSoundsList() {
-    // TODO refreshSoundsList
-    // a relancer toutes les 24h
-    // Sinon faut restart le serveur pour MAJ la liste des sons quand y'a une MAJ du github kaamelott-soundboard
-}
-
 module.exports = {
     kaamelottAudio,
     clearCache,

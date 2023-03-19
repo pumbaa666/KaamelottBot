@@ -48,6 +48,14 @@ async function startBot() {
     catch(error) {
         logger.error("Error starting client : ", error);
     }
+
+    // Refresh sound list every 24 hours
+    const tomorrow = 24 * 60 * 60 * 1000;
+    logger.info("Refreshing sounds list every 24 hours. Next refresh at " + new Date(Date.now() + tomorrow).toLocaleString("fr-FR", {timeZone: "Europe/Paris"}));
+    setInterval(async () => {        
+        sounds = await parseSoundJson(baseUrl);
+    }
+    , tomorrow);
 }
 
 async function registerSlashCommands() {
@@ -195,18 +203,23 @@ function startClient(player) {
     client.login(token);
 }
 
-async function refreshSoundsList(interaction) {
+async function refreshSoundsList(interaction = null) {
     logger.info("Refreshing sounds list...");
     const refreshedSounds = await parseSoundJson(baseUrl);
     if(refreshedSounds == null) {
         logger.error("Error refreshing sounds list, fallback to previous list");
-        interaction.reply({ content: 'Error refreshing sounds list, fallback to previous list', ephemeral: true });
+
+        if(interaction != null) {
+            interaction.reply({ content: 'Error refreshing sounds list, fallback to previous list', ephemeral: true });
+        }
         return;
     }
     const oldSoundsCount = sounds.length;
     const newSoundsCount = refreshedSounds.length;
     sounds = refreshedSounds;
-    interaction.reply({ content: 'Succès ! ' + (newSoundsCount - oldSoundsCount) + " épisodes ajoutés. Total : " + newSoundsCount, ephemeral: true });
+    if(interaction != null) {
+        interaction.reply({ content: 'Succès ! ' + (newSoundsCount - oldSoundsCount) + " épisodes ajoutés. Total : " + newSoundsCount, ephemeral: true });
+    }
 }
 
 startBot();
