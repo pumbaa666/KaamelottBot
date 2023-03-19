@@ -6,10 +6,11 @@
 
 const fs = require('fs');
 const superagent = require('superagent');
-const kaamelottbot = require('./kaamelott-audio');
+const kaamelottAudio = require('./kaamelott-audio');
 const { client_id, token } = require('../conf/auth-prod.json');
 const { baseUrl, fallbackBaseUrl } = require('../conf/config');
 const { REST, Routes, Client, NewsChannel } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const {	createAudioPlayer } = require("@discordjs/voice");
 const logger = require('../conf/logger');
 logger.level = 'debug';
@@ -68,7 +69,10 @@ async function registerSlashCommands() {
             name: 'kaamelott-refresh',
             description: 'Refresh sounds list by parsing sounds.json from github',
         },
-        
+        {
+            name: 'kaamelott-clear',
+            description: 'Clear local cached audio files',
+        },
         {
             name: 'kaamelott',
             description: 'Play a Kaamelott quote in your voice channel',
@@ -171,10 +175,12 @@ function startClient(player) {
         if (interaction.isChatInputCommand()) {
             switch(interaction.commandName) {
                 case 'ping': await interaction.reply('Pong!'); break;
-                case 'kaamelott': await kaamelottbot.kaamelottAudio(interaction, sounds, player); break;
+                case 'kaamelott': await kaamelottAudio.kaamelottAudio(interaction, sounds, player); break;
                 case 'kaamelott-refresh': await refreshSoundsList(interaction); break;
+                case 'kaamelott-clear': await askToClearCache(interaction); break;
+                
                 refreshSoundsList
-                // case 'kaamelottGif': await kaamelottbot.kaamelottGif(interaction, gifs); break;
+                // case 'kaamelottGif': await kaamelottAudio.kaamelottGif(interaction, gifs); break;
             }
 
             return;
@@ -183,17 +189,18 @@ function startClient(player) {
         // The user clicked on a button
         if (interaction.isButton()) {
             if(interaction.customId == 'stopCurrentSound') {
-                kaamelottbot.stopAudio(player);
+                kaamelottAudio.stopAudio(player);
                 interaction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
-            }
-            else if(interaction.customId.startsWith('replayAudio_')) {
+            } else if(interaction.customId.startsWith('replayAudio_')) {
                 const tempFilePath = interaction.customId.substring('replayAudio_'.length);
                 // Use the content of the temp file as the filename
                 const filename = fs.readFileSync(tempFilePath, 'utf8');
                 
                 logger.debug("Replaying file " + filename);
-                kaamelottbot.playAudio(interaction, player, filename);
+                kaamelottAudio.playAudio(interaction, player, filename);
                 interaction.reply({ content: 'Replaying file ' + filename, ephemeral: true });
+            } else if(interaction.customId == 'clearCache') {
+                clearCache(interaction);
             }
 
             return;
@@ -204,6 +211,12 @@ function startClient(player) {
 }
 
 async function refreshSoundsList(interaction = null) {
+    // Check if the user is an admin
+    if(!interaction.member.roles.cache.some(role => role.name === 'Admin')) {
+        interaction.reply("You're not an admin !");
+        return;
+    }
+
     logger.info("Refreshing sounds list...");
     const refreshedSounds = await parseSoundJson(baseUrl);
     if(refreshedSounds == null) {
@@ -220,6 +233,35 @@ async function refreshSoundsList(interaction = null) {
     if(interaction != null) {
         interaction.reply({ content: 'Succès ! ' + (newSoundsCount - oldSoundsCount) + " épisodes ajoutés. Total : " + newSoundsCount, ephemeral: true });
     }
+}
+
+// Clear local cached files
+async function askToClearCache(interaction) {
+    // Check if the user is an admin
+    if(!interaction.member.roles.cache.some(role => role.name === 'Admin')) {
+        interaction.reply("You're not an admin !");
+        return;
+    }
+
+    const reply = new EmbedBuilder()
+        .setColor(0x0099FF)
+        .setTitle("clearing cache");
+
+    const rowButtons = new ActionRowBuilder()
+        .addComponents(new ButtonBuilder()
+            .setCustomId('clearCache')
+            .setLabel('Are you sure ?')
+            .setStyle(ButtonStyle.Danger)
+            // set warning emoji
+            .setEmoji('⚠️')
+        )
+
+
+    await interaction.reply({ embeds: [reply], components: [rowButtons], ephemeral: true });
+}
+
+async function clearCache(interaction) {
+    kaamelottAudio.clearCache(interaction);
 }
 
 startBot();

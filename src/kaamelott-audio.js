@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const superagent = require('superagent');
 
 const utils = require('./utils');
 const logger = require('../conf/logger');
@@ -272,8 +273,32 @@ function stopAudio(player)
     }
 }
 
+async function clearCache(interaction) {
+    logger.debug("Clearing cache");
+    const cacheDirectory = getCacheFilePath("");
+    let nbDeletedFiles = 0;
+    let nbSkippedFiles = 0;
+    const files = fs.readdirSync(cacheDirectory);
+        
+    for (const file of files) {
+        if(!file.endsWith(".mp3")) {
+            nbSkippedFiles++;
+            continue;
+        }
+        
+        try {
+            fs.unlinkSync(path.join(cacheDirectory, file));
+            nbDeletedFiles++;
+        } catch(err) {
+            logger.error("Error while deleting file " + file + " : ", err);
+        }
+    }
+    interaction.reply("Cache cleared. " + nbDeletedFiles + " files deleted, " + nbSkippedFiles + " files skipped.");
+}
+
 module.exports = {
     kaamelottAudio,
     playAudio,
-    stopAudio
+    stopAudio,
+    clearCache
 }
