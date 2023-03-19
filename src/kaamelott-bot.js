@@ -54,20 +54,7 @@ async function kaamelottGifs(interaction, gifs, player) {
 
 async function kaamelottAudio(interaction, sounds, player) {
     logger.debug("YOU RAAAAANG ???");
-    if(isBotPlayingSound) {
-        await interaction.reply("Molo fiston, j'ai pas fini la dernière commande !");
-        return;
-    }
-    // isBotPlayingSound = true;
     
-    // Check if the user is in a voice channel
-    const channel = interaction.member?.voice.channel;
-    if (!channel) {
-        await interaction.reply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
-        isBotPlayingSound = false;
-        return;
-    }
-
     // Get the options and subcommands (if any)
     let silent = false;
     let options = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
@@ -79,18 +66,12 @@ async function kaamelottAudio(interaction, sounds, player) {
         options.splice(index, 1);
     }
 
-    // index = options.findIndex(opt => opt.name == "*");
-    // if(index != -1) {
-    //     options.splice(index, 1);
-    // }
-    
     if(options.length == 0) { // Pas d'option, on en file un au hasard
-        playAudioSafe(interaction, player, sounds[utils.getRandomInt(sounds.length - 1)], silent);
+        replyAndPlayAudio(interaction, player, sounds[utils.getRandomInt(sounds.length - 1)], silent);
         return;
     }
 
     // Des options.
-    // Create a Set of unique results
     let results = []; // new Set()
     let warning = "";
 
@@ -145,7 +126,7 @@ async function kaamelottAudio(interaction, sounds, player) {
 
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
         warning = warning + "Aucun résultat, j'en file un au hasard\n";
-        playAudioSafe(interaction, player, sounds[utils.getRandomInt(sounds.length)], silent, warning, options);
+        replyAndPlayAudio(interaction, player, sounds[utils.getRandomInt(sounds.length)], silent, warning, options);
         return;
     }
     
@@ -153,13 +134,14 @@ async function kaamelottAudio(interaction, sounds, player) {
         warning = warning + "1 résultat parmi " + results.length + "\n";
     }
     
-    playAudioSafe(interaction, player, results[utils.getRandomInt(results.length)], silent, warning, options);
+    replyAndPlayAudio(interaction, player, results[utils.getRandomInt(results.length)], silent, warning, options);
 
     return;
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function playAudioSafe(interaction, player, sound, silent = false, warning = "", options = null) {
+async function replyAndPlayAudio(interaction, player, sound, silent = false, warning = "", options = null) {
+   
     if(sound == null || sound.file == null) {
         logger.error("Sound is null or file is null, it should not happen. warning : " + warning + ", sound : ", sound);
         isBotPlayingSound = false;
@@ -256,11 +238,9 @@ async function playAudio(interaction, player, filename) {
         await interaction.reply("Molo fiston, j'ai pas fini la dernière commande !");
         return;
     }
-
     isBotPlayingSound = true;
 
     const filepath = getCacheFilePath(filename);
-
 	const resource = createAudioResource(filepath, {
 		inputType: StreamType.Arbitrary,
 	});
