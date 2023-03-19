@@ -6,8 +6,8 @@
 
 const fs = require('fs');
 const superagent = require('superagent');
-const { kaamelottAudio } = require('./kaamelott-audio');
-const { kaamelottGifs } = require('./kaamelott-gifs');
+const kaamelottAudio = require('./kaamelott-audio');
+const kaamelottGifs = require('./kaamelott-gifs');
 const { client_id, token } = require('../conf/auth-prod.json');
 const { audioBaseUrl, gifsBaseUrl } = require('../conf/config');
 const { REST, Routes, Client, NewsChannel } = require('discord.js');
@@ -243,8 +243,8 @@ function startClient(player) {
         if (interaction.isChatInputCommand()) {
             switch(interaction.commandName) {
                 case 'ping': await interaction.reply('Pong!'); break;
-                case 'kaamelott': await kaamelottAudio(interaction, sounds, player); break;
-                case 'kaamelott-gifs': await kaamelottGifs(interaction, gifs); break;
+                case 'kaamelott': await kaamelottAudio.kaamelottAudio(interaction, sounds, player); break;
+                case 'kaamelott-gifs': await kaamelottGifs.kaamelottGifs(interaction, gifs); break;
                 case 'kaamelott-refresh': await refreshSoundsList(interaction); break; // TODO and gifs ?
                 case 'kaamelott-clear': await askToClearAudioCache(interaction); break; // TODO and gifs ?
             }

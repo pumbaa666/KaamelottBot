@@ -61,7 +61,8 @@ async function kaamelottGifs(interaction, gifs, player) {
             const optName = optionMapping[option.name];
             individualResults[optName] = [];
             gifs.forEach(gif => {
-                if(gif[optName].join(",").toLowerCase().includes(option.value.toLowerCase())) {
+                const optionsInline = Array.isArray(gif[optName]) ? gif[optName].join(",") : gif[optName];
+                if(optionsInline.toLowerCase().includes(option.value.toLowerCase())) {
                     individualResults[optName].push(gif);
                 }
             });
