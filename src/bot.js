@@ -9,7 +9,7 @@ const superagent = require('superagent');
 const kaamelottbot = require('./kaamelott-audio');
 const { client_id, token } = require('../conf/auth-prod.json');
 const { baseUrl, fallbackBaseUrl } = require('../conf/config');
-const { REST, Routes, Client } = require('discord.js');
+const { REST, Routes, Client, NewsChannel } = require('discord.js');
 const {	createAudioPlayer } = require("@discordjs/voice");
 const logger = require('../conf/logger');
 logger.level = 'debug';
@@ -20,6 +20,8 @@ const GUILD_VOICE = 2
 const STRING = 3; // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-type
 const BOOLEAN = 5;
 
+let sounds = null;
+
 async function startBot() {
     const slashCommandsResult = await registerSlashCommands();
     if(slashCommandsResult == false) {
@@ -27,12 +29,12 @@ async function startBot() {
         return;
     }
 
-    const sounds = await parseSoundJson(baseUrl);
+    sounds = await parseSoundJson(baseUrl);
     if(sounds == null) {
         logger.error("Error parsing sounds (see above), aborting");
         return;
+
     }
-    logger.info("Sounds parsed successfully : " + sounds.length + " episodes found.");
 
     const player = createAudioPlayer();
     if(player == null) {
@@ -41,7 +43,7 @@ async function startBot() {
     }
 
     try {
-        startClient(sounds, player);
+        startClient(player);
     }
     catch(error) {
         logger.error("Error starting client : ", error);
@@ -54,6 +56,11 @@ async function registerSlashCommands() {
             name: 'ping',
             description: 'Replies with Pong!',
         },
+        {
+            name: 'kaamelott-refresh',
+            description: 'Refresh sounds list by parsing sounds.json from github',
+        },
+        
         {
             name: 'kaamelott',
             description: 'Play a Kaamelott quote in your voice channel',
@@ -119,17 +126,12 @@ async function parseSoundJson(url) {
         response = await superagent.get(fullUrl);
     } catch (error) {
         logger.error("Error while fetching sound at " + fullUrl, error);
-
-        // Try again with the fallback url
-        if(url != fallbackBaseUrl) {
-            return parseSoundJson(fallbackBaseUrl);
-        }
-
         return null;
     }
 
     // The response is a JSON array, this is our episodes
     if(response.body && Array.isArray(response.body)) {
+        logger.info("Sounds parsed successfully : " + sounds.length + " episodes found.");
         return response.body;
     }
 
@@ -138,20 +140,16 @@ async function parseSoundJson(url) {
         const sounds = JSON.parse(response.text);
         
         if(sounds && Array.isArray(sounds)) {
+            logger.info("Sounds parsed successfully : " + sounds.length + " episodes found.");
             return sounds;
         }
-    }
-
-    // Try again with the fallback url
-    if(url != fallbackBaseUrl) {
-        return parseSoundJson(fallbackBaseUrl);
     }
 
     logger.error("There is no sound array at " + fullUrl);
     return null;
 }
 
-function startClient(sounds, player) {
+function startClient(player) {
     const client = new Client({
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates],
     });
@@ -166,6 +164,8 @@ function startClient(sounds, player) {
             switch(interaction.commandName) {
                 case 'ping': await interaction.reply('Pong!'); break;
                 case 'kaamelott': await kaamelottbot.kaamelottAudio(interaction, sounds, player); break;
+                case 'kaamelott-refresh': await refreshSoundsList(interaction); break;
+                refreshSoundsList
                 // case 'kaamelottGif': await kaamelottbot.kaamelottGif(interaction, gifs); break;
             }
 
@@ -193,6 +193,20 @@ function startClient(sounds, player) {
     });
     
     client.login(token);
+}
+
+async function refreshSoundsList(interaction) {
+    logger.info("Refreshing sounds list...");
+    const refreshedSounds = await parseSoundJson(baseUrl);
+    if(refreshedSounds == null) {
+        logger.error("Error refreshing sounds list, fallback to previous list");
+        interaction.reply({ content: 'Error refreshing sounds list, fallback to previous list', ephemeral: true });
+        return;
+    }
+    const oldSoundsCount = sounds.length;
+    const newSoundsCount = refreshedSounds.length;
+    sounds = refreshedSounds;
+    interaction.reply({ content: 'Succès ! ' + (newSoundsCount - oldSoundsCount) + " épisodes ajoutés. Total : " + newSoundsCount, ephemeral: true });
 }
 
 startBot();
