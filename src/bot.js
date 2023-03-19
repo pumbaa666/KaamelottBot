@@ -23,7 +23,7 @@ const {
 	joinVoiceChannel,
 } = require("@discordjs/voice");
 
-const logger = require('./logger.js');
+const logger = require('./logger');
 logger.level = 'debug';
 
 // TODO ajouter un bouton pour relancer la commande
