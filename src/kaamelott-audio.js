@@ -4,7 +4,7 @@ const superagent = require('superagent');
 
 const utils = require('./utils');
 const logger = require('../conf/logger');
-const { baseUrl } = require('../conf/config');
+const { audioBaseUrl } = require('../conf/config');
 
 // const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
@@ -71,8 +71,7 @@ async function kaamelottAudio(interaction, sounds, player) {
         const optionMapping = {
             "perso": "character",
             "titre": "episode",
-            "texte": "title", // Oui c'est fucked up mais c'est comme ça dans l'API
-            "tout": "tout"
+            "texte": "title" // Oui c'est fucked up mais c'est comme ça dans l'API
         };
         
         const individualResults = [];
@@ -119,12 +118,11 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
    
     if(sound == null || sound.file == null) {
         logger.error("Sound is null or file is null, it should not happen. warning : " + warning + ", sound : ", sound);
-        isBotPlayingSound = false;
         return;
     }
 
     const filename = sound.file;
-    let fullUrl = baseUrl + filename;
+    let fullUrl = audioBaseUrl + filename;
     const filepath = getCacheFilePath(filename);
 
     // Cache files
@@ -191,7 +189,6 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
 
     if(silent) {
         logger.debug("Silent mode, not playing audio");
-        isBotPlayingSound = false;
         return;
     }
 
@@ -203,7 +200,7 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
     }
 }
 
-async function connectToChannel(channel) {
+async function connectToVoiceChannel(channel) {
 	const connection = joinVoiceChannel({
 		channelId: channel.id,
 		guildId: channel.guild.id,
@@ -240,7 +237,7 @@ async function playAudio(interaction, player, filename) {
     }
 
     // Try to connect to the user's voice channel
-    const voiceChannel = await connectToChannel(channel);
+    const voiceChannel = await connectToVoiceChannel(channel);
     if(voiceChannel == null) {
         await interaction.reply("Je n'ai pas réussi à me connecter au canal audio :'(");
         isBotPlayingSound = false;

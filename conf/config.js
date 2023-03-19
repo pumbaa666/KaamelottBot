@@ -1,6 +1,6 @@
 const config = {
-    baseUrl: "https://raw.githubusercontent.com/crystalskunk/KaamelottBot/master/sounds/",
-    fallbackBaseUrl: "http://pumbaa.ch/public/kaamelott/",
+    audioBaseUrl: "https://raw.githubusercontent.com/crystalskunk/KaamelottBot/master/sounds/",
+    gifsBaseUrl: "https://raw.githubusercontent.com/kaamelott-gifboard/kaamelott-gifboard/main/"
 };
 
 module.exports = config;

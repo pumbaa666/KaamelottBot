@@ -6,9 +6,10 @@
 
 const fs = require('fs');
 const superagent = require('superagent');
-const kaamelottAudio = require('./kaamelott-audio');
+const { kaamelottAudio } = require('./kaamelott-audio');
+const { kaamelottGifs } = require('./kaamelott-gifs');
 const { client_id, token } = require('../conf/auth-prod.json');
-const { baseUrl, fallbackBaseUrl } = require('../conf/config');
+const { audioBaseUrl, gifsBaseUrl } = require('../conf/config');
 const { REST, Routes, Client, NewsChannel } = require('discord.js');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const {	createAudioPlayer } = require("@discordjs/voice");
@@ -22,6 +23,7 @@ const STRING = 3; // https://discord.com/developers/docs/interactions/applicatio
 const BOOLEAN = 5;
 
 let sounds = null;
+let gifs = null;
 
 async function startBot() {
     const slashCommandsResult = await registerSlashCommands();
@@ -30,11 +32,17 @@ async function startBot() {
         return;
     }
 
-    sounds = await parseSoundJson(baseUrl);
+    sounds = await parseSoundJson(audioBaseUrl);
     if(sounds == null) {
         logger.error("Error parsing sounds (see above), aborting");
         return;
 
+    }
+
+    gifs = await parseGifsJson(gifsBaseUrl);
+    if(gifs == null) {
+        logger.error("Error parsing gifs (see above), aborting");
+        return;
     }
 
     const player = createAudioPlayer();
@@ -52,9 +60,10 @@ async function startBot() {
 
     // Refresh sound list every 24 hours
     const tomorrow = 24 * 60 * 60 * 1000;
-    logger.info("Refreshing sounds list every 24 hours. Next refresh at " + new Date(Date.now() + tomorrow).toLocaleString("fr-FR", {timeZone: "Europe/Paris"}));
+    logger.info("Refreshing sounds and gifs list every 24 hours. Next refresh at " + new Date(Date.now() + tomorrow).toLocaleString("fr-FR", {timeZone: "Europe/Paris"}));
     setInterval(async () => {        
-        sounds = await parseSoundJson(baseUrl);
+        sounds = await parseSoundJson(audioBaseUrl);
+        gifs = await parseGifsJson(gifsBaseUrl);
     }
     , tomorrow);
 }
@@ -114,6 +123,34 @@ async function registerSlashCommands() {
                     channel_type: GUILD_VOICE,
                 }
             ]
+        },
+        {
+            name: 'kaamelott-gifs',
+            description: 'Play a Kaamelott GIF in your channel',
+            type: CHAT_INPUT,
+            options: [
+                {
+                    name: 'tout',
+                    description: 'The keyword to search for. Can be a character, an episode or a quote',
+                    type: STRING,
+                    required: false,
+                    channel_type: GUILD_VOICE,
+                },
+                {
+                    name: 'texte',
+                    description: 'Search in the text of the quote',
+                    type: STRING,
+                    required: false,
+                    channel_type: GUILD_VOICE,
+                },
+                {
+                    name: 'perso',
+                    description: 'Search when this character speaks',
+                    type: STRING,
+                    required: false,
+                    channel_type: GUILD_VOICE,
+                }
+            ]
         }
     ];
 
@@ -161,6 +198,37 @@ async function parseSoundJson(url) {
     return null;
 }
 
+async function parseGifsJson(url) {
+    const fullUrl = url + "gifs.json";
+    let response = null;
+
+    try {
+        response = await superagent.get(fullUrl);
+    } catch (error) {
+        logger.error("Error while fetching sound at " + fullUrl, error);
+        return null;
+    }
+
+    // The response is a JSON array, this is our episodes
+    if(response.body && Array.isArray(response.body)) {
+        logger.info("Gifs parsed successfully : " + sounds.length + " episodes found.");
+        return response.body;
+    }
+
+    // Try again from response.text (dirty hack 'cause of github...)
+    if(response.text != null && response.text != "") {
+        const gifs = JSON.parse(response.text);
+        
+        if(gifs && Array.isArray(gifs)) {
+            logger.info("Gifs parsed successfully : " + gifs.length + " image found.");
+            return gifs;
+        }
+    }
+
+    logger.error("There is no gifs array at " + fullUrl);
+    return null;
+}
+
 function startClient(player) {
     const client = new Client({
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates],
@@ -175,12 +243,10 @@ function startClient(player) {
         if (interaction.isChatInputCommand()) {
             switch(interaction.commandName) {
                 case 'ping': await interaction.reply('Pong!'); break;
-                case 'kaamelott': await kaamelottAudio.kaamelottAudio(interaction, sounds, player); break;
-                case 'kaamelott-refresh': await refreshSoundsList(interaction); break;
-                case 'kaamelott-clear': await askToClearCache(interaction); break;
-                
-                refreshSoundsList
-                // case 'kaamelottGif': await kaamelottAudio.kaamelottGif(interaction, gifs); break;
+                case 'kaamelott': await kaamelottAudio(interaction, sounds, player); break;
+                case 'kaamelott-gifs': await kaamelottGifs(interaction, gifs); break;
+                case 'kaamelott-refresh': await refreshSoundsList(interaction); break; // TODO and gifs ?
+                case 'kaamelott-clear': await askToClearAudioCache(interaction); break; // TODO and gifs ?
             }
 
             return;
@@ -218,7 +284,7 @@ async function refreshSoundsList(interaction = null) {
     }
 
     logger.info("Refreshing sounds list...");
-    const refreshedSounds = await parseSoundJson(baseUrl);
+    const refreshedSounds = await parseSoundJson(audioBaseUrl);
     if(refreshedSounds == null) {
         logger.error("Error refreshing sounds list, fallback to previous list");
 
@@ -236,9 +302,8 @@ async function refreshSoundsList(interaction = null) {
 }
 
 // Clear local cached files
-async function askToClearCache(interaction) {
-    // Check if the user is an admin
-    if(!interaction.member.roles.cache.some(role => role.name === 'Admin')) {
+async function askToClearAudioCache(interaction) {
+    if(!isAdmin(interaction.member)) {
         interaction.reply("You're not an admin !");
         return;
     }
@@ -252,16 +317,23 @@ async function askToClearCache(interaction) {
             .setCustomId('clearCache')
             .setLabel('Are you sure ?')
             .setStyle(ButtonStyle.Danger)
-            // set warning emoji
             .setEmoji('⚠️')
-        )
-
+        );
 
     await interaction.reply({ embeds: [reply], components: [rowButtons], ephemeral: true });
 }
 
 async function clearCache(interaction) {
+    if(!isAdmin(interaction.member)) {
+        interaction.reply("You're not an admin !");
+        return;
+    }
+
     kaamelottAudio.clearCache(interaction);
+}
+
+function isAdmin(member) {
+    return member.roles.cache.some(role => role.name === 'Admin');
 }
 
 startBot();

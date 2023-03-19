@@ -61,5 +61,6 @@ typings/
 # next.js build output
 .next
 #/sounds/*.mp3
+/gifs/*.gif
 conf/auth-prod.json
 /logs/*.log
