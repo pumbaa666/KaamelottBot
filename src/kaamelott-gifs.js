@@ -150,14 +150,14 @@ async function replyAndSendGif(interaction, gif, warning = "", options = null) {
 }
 
 async function clearCache(interaction) {
-    logger.debug("Clearing cache");
+    logger.debug("Clearing Gifs cache");
     const cacheDirectory = getCacheFilePath("");
     let nbDeletedFiles = 0;
     let nbSkippedFiles = 0;
     const files = fs.readdirSync(cacheDirectory);
         
     for (const file of files) {
-        if(!file.endsWith(".gifs")) {
+        if(!file.endsWith(".gif")) {
             nbSkippedFiles++;
             continue;
         }

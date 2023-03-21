@@ -271,7 +271,7 @@ function stopAudio(player)
 }
 
 async function clearCache(interaction) {
-    logger.debug("Clearing cache");
+    logger.debug("Clearing Audio cache");
     const cacheDirectory = getCacheFilePath("");
     let nbDeletedFiles = 0;
     let nbSkippedFiles = 0;

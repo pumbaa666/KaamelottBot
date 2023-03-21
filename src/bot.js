@@ -75,15 +75,7 @@ async function registerSlashCommands() {
             description: 'Replies with Pong!',
         },
         {
-            name: 'kaamelott-refresh',
-            description: 'Refresh sounds list by parsing sounds.json from github',
-        },
-        {
-            name: 'kaamelott-clear',
-            description: 'Clear local cached audio files',
-        },
-        {
-            name: 'kaamelott',
+            name: 'kaamelott-audio',
             description: 'Play a Kaamelott quote in your voice channel',
             type: CHAT_INPUT,
             options: [
@@ -125,6 +117,14 @@ async function registerSlashCommands() {
             ]
         },
         {
+            name: 'kaamelott-refresh-audio',
+            description: 'Refresh sounds list by parsing sounds.json from github',
+        },
+        {
+            name: 'kaamelott-clear-audio',
+            description: 'Clear local cached audio files',
+        },
+        {
             name: 'kaamelott-gifs',
             description: 'Play a Kaamelott GIF in your channel',
             type: CHAT_INPUT,
@@ -151,7 +151,15 @@ async function registerSlashCommands() {
                     channel_type: GUILD_VOICE,
                 }
             ]
-        }
+        },
+        {
+            name: 'kaamelott-refresh-gifs',
+            description: 'Refresh gifs list by parsing gifs.json from github',
+        },
+        {
+            name: 'kaamelott-clear-gifs',
+            description: 'Clear local cached gifs files',
+        },
     ];
 
     const rest = new REST({ version: '10' }).setToken(token);
@@ -243,10 +251,12 @@ function startClient(player) {
         if (interaction.isChatInputCommand()) {
             switch(interaction.commandName) {
                 case 'ping': await interaction.reply('Pong!'); break;
-                case 'kaamelott': await kaamelottAudio.kaamelottAudio(interaction, sounds, player); break;
+                case 'kaamelott-audio': await kaamelottAudio.kaamelottAudio(interaction, sounds, player); break;
+                case 'kaamelott-refresh-audio': await refreshSoundsList(interaction); break;
+                case 'kaamelott-clear-audio': await askToClearAudioCache(interaction); break;
                 case 'kaamelott-gifs': await kaamelottGifs.kaamelottGifs(interaction, gifs); break;
-                case 'kaamelott-refresh': await refreshSoundsList(interaction); break; // TODO and gifs ?
-                case 'kaamelott-clear': await askToClearAudioCache(interaction); break; // TODO and gifs ?
+                case 'kaamelott-refresh-gifs': await refreshGifsList(interaction); break;
+                case 'kaamelott-clear-gifs': await askToClearGifsCache(interaction); break;                
             }
 
             return;
@@ -265,10 +275,11 @@ function startClient(player) {
                 logger.debug("Replaying file " + filename);
                 kaamelottAudio.playAudio(interaction, player, filename);
                 interaction.reply({ content: 'Replaying file ' + filename, ephemeral: true });
-            } else if(interaction.customId == 'clearCache') {
-                clearCache(interaction);
+            } else if(interaction.customId == 'clearAudioCache') {
+                clearAudioCache(interaction);
+            } else if(interaction.customId == 'clearGifsCache') {
+                clearGifsCache(interaction);
             }
-
             return;
         }
     });
@@ -278,7 +289,7 @@ function startClient(player) {
 
 async function refreshSoundsList(interaction = null) {
     // Check if the user is an admin
-    if(!interaction.member.roles.cache.some(role => role.name === 'Admin')) {
+    if(!isAdmin(interaction.member)) {
         interaction.reply("You're not an admin !");
         return;
     }
@@ -301,6 +312,31 @@ async function refreshSoundsList(interaction = null) {
     }
 }
 
+async function refreshGifsList(interaction = null) {
+    // Check if the user is an admin
+    if(!isAdmin(interaction.member)) {
+        interaction.reply("You're not an admin !");
+        return;
+    }
+
+    logger.info("Refreshing gifs list...");
+    const refreshedGifs = await parseGifsJson(gifsBaseUrl);
+    if(refreshedGifs == null) {
+        logger.error("Error refreshing gifs list, fallback to previous list");
+
+        if(interaction != null) {
+            interaction.reply({ content: 'Error refreshing gifs list, fallback to previous list', ephemeral: true });
+        }
+        return;
+    }
+    const oldGifsCount = gifs.length;
+    const newGifsCount = refreshedGifs.length;
+    gifs = refreshedGifs;
+    if(interaction != null) {
+        interaction.reply({ content: 'Succès ! ' + (newGifsCount - oldGifsCount) + " gifs ajoutés. Total : " + newGifsCount, ephemeral: true });
+    }
+}
+
 // Clear local cached files
 async function askToClearAudioCache(interaction) {
     if(!isAdmin(interaction.member)) {
@@ -310,11 +346,32 @@ async function askToClearAudioCache(interaction) {
 
     const reply = new EmbedBuilder()
         .setColor(0x0099FF)
-        .setTitle("clearing cache");
+        .setTitle("Delete all the sounds in cache");
 
     const rowButtons = new ActionRowBuilder()
         .addComponents(new ButtonBuilder()
-            .setCustomId('clearCache')
+            .setCustomId('clearAudioCache')
+            .setLabel('Are you sure ?')
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji('⚠️')
+        );
+
+    await interaction.reply({ embeds: [reply], components: [rowButtons], ephemeral: true });
+}
+// Clear local cached files
+async function askToClearGifsCache(interaction) {
+    if(!isAdmin(interaction.member)) {
+        interaction.reply("You're not an admin !");
+        return;
+    }
+
+    const reply = new EmbedBuilder()
+        .setColor(0x0099FF)
+        .setTitle("Delete all the gifs in cache");
+
+    const rowButtons = new ActionRowBuilder()
+        .addComponents(new ButtonBuilder()
+            .setCustomId('clearGifsCache')
             .setLabel('Are you sure ?')
             .setStyle(ButtonStyle.Danger)
             .setEmoji('⚠️')
@@ -323,7 +380,7 @@ async function askToClearAudioCache(interaction) {
     await interaction.reply({ embeds: [reply], components: [rowButtons], ephemeral: true });
 }
 
-async function clearCache(interaction) {
+async function clearAudioCache(interaction) {
     if(!isAdmin(interaction.member)) {
         interaction.reply("You're not an admin !");
         return;
@@ -332,7 +389,20 @@ async function clearCache(interaction) {
     kaamelottAudio.clearCache(interaction);
 }
 
+async function clearGifsCache(interaction) {
+    if(!isAdmin(interaction.member)) {
+        interaction.reply("You're not an admin !");
+        return;
+    }
+
+    kaamelottGifs.clearCache(interaction);
+}
+
 function isAdmin(member) {
+    if(member == null || member.roles == null || member.roles.cache == null) {
+        logger.warn("Roles are null ! Member : ", member);
+        return false;
+    }
     return member.roles.cache.some(role => role.name === 'Admin');
 }
 
