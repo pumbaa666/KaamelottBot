@@ -1,0 +1,12 @@
+[Unit]
+Description=Discord Kaamelott Bot
+
+[Service]
+Type=simple
+User=1000
+Group=1000
+ExecStart=/home/pumbaa/.nvm/versions/node/v19.7.0/bin/node /home/pumbaa/programmation/node/KaamelottBot/src/bot.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
