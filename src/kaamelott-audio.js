@@ -116,8 +116,19 @@ async function kaamelottAudio(interaction, sounds, player) {
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 async function replyAndPlayAudio(interaction, player, sound, silent = false, warning = "", options = null) {
    
+    if(isBotPlayingSound) {
+        await interaction.reply("Molo fiston, j'ai pas fini la dernière commande !");
+        return;
+    }
+
+    if (!interaction.member?.voice.channel) {
+        await interaction.reply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
+        return;
+    }
+
     if(sound == null || sound.file == null) {
         logger.error("Sound is null or file is null, it should not happen. warning : " + warning + ", sound : ", sound);
+        await interaction.reply("Une erreur survenue est inattandue !");
         return;
     }
 
@@ -192,12 +203,12 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
         return;
     }
 
-    try {
-        await playAudio(interaction, player, filename);
-    } catch(error) {
-        isBotPlayingSound = false;
-        logger.error("Error while playing audio at " + filepath + " : ", error);
-    }
+    // try {
+        await playAudio(interaction.member?.voice.channel, player, filename);
+    // } catch(error) {
+    //     isBotPlayingSound = false;
+    //     logger.error("Error while playing audio at " + filepath + " : ", error);
+    // }
 }
 
 async function connectToVoiceChannel(channel) {
@@ -208,20 +219,26 @@ async function connectToVoiceChannel(channel) {
 		adapterCreator: channel.guild.voiceAdapterCreator,
 	});
 	try {
-		await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
+		await entersState(connection, VoiceConnectionStatus.Ready, 2_000);
 		return connection;
 	} catch (error) {
         logger.error("Error connecting to voice channel : ", error);
 		connection.destroy();
-        return null;
+        // return null;
+        throw error;
 	}
 }
 
-async function playAudio(interaction, player, filename) {
+async function playAudio(channel, player, filename) {
     if(isBotPlayingSound) {
-        await interaction.reply("Molo fiston, j'ai pas fini la dernière commande !");
         return;
     }
+
+    if (channel == null) {
+        logger.warn("Channel is null, can't play audio");
+        return;
+    }
+
     isBotPlayingSound = true;
 
     const filepath = getCacheFilePath(filename);
@@ -229,31 +246,34 @@ async function playAudio(interaction, player, filename) {
 		inputType: StreamType.Arbitrary,
 	});
 
-    const channel = interaction.member?.voice.channel;
-    if (!channel) {
-        await interaction.reply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
-        isBotPlayingSound = false;
-        return;
-    }
 
     // Try to connect to the user's voice channel
-    const voiceChannel = await connectToVoiceChannel(channel);
-    if(voiceChannel == null) {
-        await interaction.reply("Je n'ai pas réussi à me connecter au canal audio :'(");
+    let voiceChannel = null;
+    try {
+        voiceChannel = await connectToVoiceChannel(channel);
+    } catch(error) {
         isBotPlayingSound = false;
+        logger.warn("Error trying to connect to channel : ", error); // Could be because of some proxy filtering the connection.
         return;
     }
-    logger.debug("connected to voice channel : " + interaction.member?.voice.channel.name)
+    logger.debug("connected to voice channel : " + channel.name)
     
-    voiceChannel.subscribe(player);
-	player.play(resource); // , {volume: "0.5"}
-    player.on("stateChange", state => {
-        logger.debug("State changed to " + state.status);
-        if(state.status == AudioPlayerStatus.Playing) { // Why Playing and not Idle ?
-            isBotPlayingSound = false; 
-            logger.debug("Longue vie à Kaamelott !");
-        }
-    });
+    try {
+        voiceChannel.subscribe(player);
+        player.play(resource); // , {volume: "0.5"}
+        player.on("stateChange", state => {
+            logger.debug("State changed to " + state.status);
+            if(state.status == AudioPlayerStatus.Playing) { // Why Playing and not Idle ?
+                isBotPlayingSound = false; 
+                logger.debug("Longue vie à Kaamelott !");
+            }
+        });
+    } catch(error) {
+        logger.error("Error while playing audio at " + filepath + " : ", error);
+        logger.error(" - Player : ", player);
+        logger.error(" - VoiceChannel : ", voiceChannel);
+        logger.error(" - Resource : ", resource);
+    }
 
 	return entersState(player, AudioPlayerStatus.Playing, 5000);
 }

@@ -273,7 +273,7 @@ function startClient(player) {
                 const filename = fs.readFileSync(tempFilePath, 'utf8');
                 
                 logger.debug("Replaying file " + filename);
-                kaamelottAudio.playAudio(interaction, player, filename);
+                kaamelottAudio.playAudio(interaction.member?.voice.channel, player, filename);
                 interaction.reply({ content: 'Replaying file ' + filename, ephemeral: true });
             } else if(interaction.customId == 'clearAudioCache') {
                 clearAudioCache(interaction);
