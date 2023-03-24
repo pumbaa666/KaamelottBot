@@ -33,7 +33,7 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
         }
         gifs.forEach(gif => {
             const characters = Array.isArray(gif.characters) ? gif.characters.join(",") : gif.characters;
-            const charactersSpeaking = Array.isArray(gif.characters_speaking) ? gif.characters_speaking.join(",") : gif.characters;
+            const charactersSpeaking = Array.isArray(gif.characters_speaking) ? gif.characters_speaking.join(",") : gif.characters_speaking;
             if( characters.toLowerCase().includes(subValue) ||
                 charactersSpeaking.toLowerCase().includes(subValue) ||
                 gif.quote.toLowerCase().includes(subValue)) {
