@@ -1,12 +1,9 @@
 const path = require('path');
 const fs = require('fs');
 const superagent = require('superagent');
-
 const utils = require('./utils');
 const logger = require('../conf/logger');
 const { audioBaseUrl } = require('../conf/config');
-
-// const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const {
 	StreamType,
@@ -19,15 +16,7 @@ const {
 
 let isBotPlayingSound = false;
 
-// Get current directory absolute path
-function getCacheFilePath(filename) {
-    const currentFilePath = path.resolve(__dirname);
-    const cacheDirectory = currentFilePath + "/../sounds/";
-    const filepath = cacheDirectory + filename;
-    return filepath;
-}
-
-async function kaamelottAudio(interaction, sounds, player) {
+async function searchAndReply(interaction, sounds, player, cacheDirectory) {
     logger.debug("YOU RAAAAANG ???");
     
     // Get the options and subcommands (if any)
@@ -42,7 +31,7 @@ async function kaamelottAudio(interaction, sounds, player) {
     }
 
     if(options.length == 0) { // Pas d'option, on en file un au hasard
-        replyAndPlayAudio(interaction, player, sounds[utils.getRandomInt(sounds.length - 1)], silent);
+        replyWithMedia(interaction, player, sounds[utils.getRandomInt(sounds.length - 1)], silent, cacheDirectory);
         return;
     }
 
@@ -100,7 +89,7 @@ async function kaamelottAudio(interaction, sounds, player) {
 
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
         warning = warning + "Aucun résultat, j'en file un au hasard\n";
-        replyAndPlayAudio(interaction, player, sounds[utils.getRandomInt(sounds.length)], silent, warning, options);
+        replyWithMedia(interaction, player, sounds[utils.getRandomInt(sounds.length)], silent, cacheDirectory, warning, options);
         return;
     }
     
@@ -108,13 +97,13 @@ async function kaamelottAudio(interaction, sounds, player) {
         warning = warning + "1 résultat parmi " + results.length + "\n";
     }
     
-    replyAndPlayAudio(interaction, player, results[utils.getRandomInt(results.length)], silent, warning, options);
+    replyWithMedia(interaction, player, results[utils.getRandomInt(results.length)], silent, cacheDirectory, warning, options);
 
     return;
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function replyAndPlayAudio(interaction, player, sound, silent = false, warning = "", options = null) {
+async function replyWithMedia(interaction, player, sound, silent = false, cacheDirectory, warning = "", options = null) {
    
     if(isBotPlayingSound) {
         await interaction.reply("Molo fiston, j'ai pas fini la dernière commande !");
@@ -127,14 +116,14 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
     }
 
     if(sound == null || sound.file == null) {
-        logger.error("Sound is null or file is null, it should not happen. warning : " + warning + ", sound : ", sound);
+        logger.error("Sound is null or file is null, it should not happen. sound : ", sound);
         await interaction.reply("Une erreur survenue est inattandue !");
         return;
     }
 
     const filename = sound.file;
     let fullUrl = audioBaseUrl + filename;
-    const filepath = getCacheFilePath(filename);
+    const filepath = path.join(cacheDirectory, filename);
 
     // Cache files
     try {
@@ -203,12 +192,7 @@ async function replyAndPlayAudio(interaction, player, sound, silent = false, war
         return;
     }
 
-    // try {
-        await playAudio(interaction.member?.voice.channel, player, filename);
-    // } catch(error) {
-    //     isBotPlayingSound = false;
-    //     logger.error("Error while playing audio at " + filepath + " : ", error);
-    // }
+    await playAudio(interaction.member?.voice.channel, player, filepath);
 }
 
 async function connectToVoiceChannel(channel) {
@@ -229,7 +213,7 @@ async function connectToVoiceChannel(channel) {
 	}
 }
 
-async function playAudio(channel, player, filename) {
+async function playAudio(channel, player, filepath) {
     if(isBotPlayingSound) {
         return;
     }
@@ -241,11 +225,9 @@ async function playAudio(channel, player, filename) {
 
     isBotPlayingSound = true;
 
-    const filepath = getCacheFilePath(filename);
 	const resource = createAudioResource(filepath, {
 		inputType: StreamType.Arbitrary,
 	});
-
 
     // Try to connect to the user's voice channel
     let voiceChannel = null;
@@ -290,32 +272,8 @@ function stopAudio(player)
     }
 }
 
-async function clearCache(interaction) {
-    logger.debug("Clearing Audio cache");
-    const cacheDirectory = getCacheFilePath("");
-    let nbDeletedFiles = 0;
-    let nbSkippedFiles = 0;
-    const files = fs.readdirSync(cacheDirectory);
-        
-    for (const file of files) {
-        if(!file.endsWith(".mp3")) {
-            nbSkippedFiles++;
-            continue;
-        }
-        
-        try {
-            fs.unlinkSync(path.join(cacheDirectory, file));
-            nbDeletedFiles++;
-        } catch(err) {
-            logger.error("Error while deleting file " + file + " : ", err);
-        }
-    }
-    interaction.reply("Cache cleared. " + nbDeletedFiles + " files deleted, " + nbSkippedFiles + " files skipped.");
-}
-
 module.exports = {
-    kaamelottAudio,
+    searchAndReply,
     playAudio,
     stopAudio,
-    clearCache
 }

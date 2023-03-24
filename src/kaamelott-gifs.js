@@ -1,23 +1,20 @@
 const path = require('path');
 const fs = require('fs');
 const superagent = require('superagent');
-
 const utils = require('./utils');
 const logger = require('../conf/logger');
 const { gifsBaseUrl } = require('../conf/config');
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 
-// const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-
-// Get current directory absolute path
 function getCacheFilePath(filename) {
     const currentFilePath = path.resolve(__dirname);
     const cacheDirectory = currentFilePath + "/../gifs/";
     const filepath = cacheDirectory + filename;
     return filepath;
-}
+} // TODO delete
 
-async function kaamelottGifs(interaction, gifs, player) {
+async function searchAndReply(interaction, gifs, player = null, cacheDirectory) {
+
     logger.debug("Allo?");
     
     // Get the options and subcommands (if any)
@@ -25,7 +22,7 @@ async function kaamelottGifs(interaction, gifs, player) {
     logger.debug('options : ', options);
 
     if(options.length == 0) { // Pas d'option, on en file un au hasard
-        replyAndSendGif(interaction, gifs[utils.getRandomInt(gifs.length - 1)]);
+        replyWithMedia(interaction, gifs[utils.getRandomInt(gifs.length - 1)], cacheDirectory);
         return;
     }
 
@@ -52,7 +49,7 @@ async function kaamelottGifs(interaction, gifs, player) {
         
     else { // Search for each options with corresponding value
         const optionMapping = {
-            "perso": "characters",
+            "perso": "characters", // On ne recheche pas dans characters_speaking car ils sont inclus dans characters
             "texte": "quote"
         };
         
@@ -83,7 +80,7 @@ async function kaamelottGifs(interaction, gifs, player) {
 
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
         warning = warning + "Aucun résultat, j'en file un au hasard\n";
-        replyAndSendGif(interaction, gifs[utils.getRandomInt(gifs.length)], warning, options);
+        replyWithMedia(interaction, gifs[utils.getRandomInt(gifs.length)], cacheDirectory, warning, options);
         return;
     }
     
@@ -91,21 +88,22 @@ async function kaamelottGifs(interaction, gifs, player) {
         warning = warning + "1 résultat parmi " + results.length + "\n";
     }
     
-    replyAndSendGif(interaction, results[utils.getRandomInt(results.length)], warning, options);
+    replyWithMedia(interaction, results[utils.getRandomInt(results.length)], cacheDirectory, warning, options);
 
     return;
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function replyAndSendGif(interaction, gif, warning = "", options = null) {
+async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", options = null) {
     if(gif == null || gif.filename == null) {
-        logger.error("Gif is null or file is null, it should not happen. warning : " + warning + ", gif : ", gif);
+        logger.error("Gif is null or file is null, it should not happen. gif : ", gif);
         return;
     }
 
     const filename = gif.filename;
     let fullUrl = gifsBaseUrl + "public/gifs/" + filename;
-    const filepath = getCacheFilePath(filename);
+    const filepath = path.join(cacheDirectory, filename);
+    // const filepath2 = getCacheFilePath(filename, "gifs");
 
     // Cache files
     try {
@@ -116,9 +114,11 @@ async function replyAndSendGif(interaction, gif, warning = "", options = null) {
         }
     } catch(error) {
         logger.warn("Error while trying to cache file at " + filepath + " : ", error);
+        // TODO try to send the url instead of the file
+        await interaction.reply("Je n'ai pas réussi à télécharger le fichier " + fullUrl + " : " + error); // To delete when the retry with fullUrl is implemented
+        return;
     }
 
-    // https://discordjs.guide/popular-topics/embeds.html#using-the-embed-constructor
     logger.debug("Sending embed to user. Warning : " + warning + ", options : ", options);
 
     // https://discordjs.guide/popular-topics/embeds.html#attaching-images
@@ -135,8 +135,7 @@ async function replyAndSendGif(interaction, gif, warning = "", options = null) {
         )
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         .setImage('attachment://' + filename)
-        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' }
-    );
+        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' });
     
     if(options != null) {
         const optionsInline = options.map(option => option.value).join(", ").toLowerCase() + " (in " + options.map(option => option.name).join(", ").toLowerCase() + ")"; // On concatène les options
@@ -146,33 +145,14 @@ async function replyAndSendGif(interaction, gif, warning = "", options = null) {
         reply.addFields({ name: 'Warning', value: warning, inline: false});
     }
 
-    await interaction.reply({ embeds: [reply], files: [gifFile]});
-}
-
-async function clearCache(interaction) {
-    logger.debug("Clearing Gifs cache");
-    const cacheDirectory = getCacheFilePath("");
-    let nbDeletedFiles = 0;
-    let nbSkippedFiles = 0;
-    const files = fs.readdirSync(cacheDirectory);
-        
-    for (const file of files) {
-        if(!file.endsWith(".gif")) {
-            nbSkippedFiles++;
-            continue;
-        }
-        
-        try {
-            fs.unlinkSync(path.join(cacheDirectory, file));
-            nbDeletedFiles++;
-        } catch(err) {
-            logger.error("Error while deleting file " + file + " : ", err);
-        }
+    try {
+    await interaction.reply({ embeds: [reply], files: [gifFile]}); // TODO try to set a longer timeout
+    } catch(error) {
+        logger.error("Error while replying to user : ", error);
     }
-    interaction.reply("Cache cleared. " + nbDeletedFiles + " files deleted, " + nbSkippedFiles + " files skipped.");
+    logger.debug("Embed sent to user");
 }
 
 module.exports = {
-    kaamelottGifs,
-    clearCache
+    searchAndReply,
 };
