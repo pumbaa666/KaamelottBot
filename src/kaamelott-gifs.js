@@ -6,13 +6,6 @@ const logger = require('../conf/logger');
 const { gifsBaseUrl } = require('../conf/config');
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 
-function getCacheFilePath(filename) {
-    const currentFilePath = path.resolve(__dirname);
-    const cacheDirectory = currentFilePath + "/../gifs/";
-    const filepath = cacheDirectory + filename;
-    return filepath;
-} // TODO delete
-
 async function searchAndReply(interaction, gifs, player = null, cacheDirectory) {
 
     logger.debug("Allo?");
@@ -146,7 +139,7 @@ async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", op
     }
 
     try {
-    await interaction.reply({ embeds: [reply], files: [gifFile]}); // TODO try to set a longer timeout
+        await interaction.reply({ embeds: [reply], files: [gifFile]}); // TODO try to set a longer timeout
     } catch(error) {
         logger.error("Error while replying to user : ", error);
     }

@@ -2,6 +2,12 @@
 // Basic Bot (mon usage) https://github.com/discordjs/voice-examples/blob/main/basic/src/adapter.ts
 // Radio Bot : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 
+// TODO acknoledge each command by sending a quick interaction.reply("Processing...*") and then interaction.update("Done") when done
+// A command has to return within 3 seconds or it will be considered failed by Discord and will send an error message to the user
+// after that the command is valid for 15 minutes before being invalidated and a new one has to be sent.
+// Source : https://discord.com/developers/docs/interactions/receiving-and-responding
+// *phrases marrantes : Vous avez une idée du bordel que c'est dans les archives ?
+// Jamais de flammes dans une bibliothèque ! (trouver la quote de Clavier)
 // TODO passer de js en ts
 
 const path = require('path');
