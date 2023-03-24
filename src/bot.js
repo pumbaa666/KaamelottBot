@@ -359,6 +359,12 @@ function startClient(player) {
     client.login(token);
 }
 
+function getCacheFilePath(filename, type) {
+    const currentFilePath = path.resolve(__dirname);
+    const cacheDirectory = currentFilePath + "/../"+type+"/";
+    const filepath = cacheDirectory + filename;
+    return filepath;
+}
 // Show a warning and ask for a confirmation
 // The user can accept by clicking on the button
 async function askToClearCache(interaction, type) {
