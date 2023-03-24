@@ -2,12 +2,6 @@
 // Basic Bot (mon usage) https://github.com/discordjs/voice-examples/blob/main/basic/src/adapter.ts
 // Radio Bot : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 
-// TODO acknoledge each command by sending a quick interaction.reply("Processing...*") and then interaction.update("Done") when done
-// A command has to return within 3 seconds or it will be considered failed by Discord and will send an error message to the user
-// after that the command is valid for 15 minutes before being invalidated and a new one has to be sent.
-// Source : https://discord.com/developers/docs/interactions/receiving-and-responding
-// *phrases marrantes : Vous avez une idée du bordel que c'est dans les archives ?
-// Jamais de flammes dans une bibliothèque ! (trouver la quote de Clavier)
 // TODO passer de js en ts
 
 const path = require('path');
@@ -256,7 +250,7 @@ async function parseJson(url, type) {
 async function refreshList(interaction, type, url, oldCount) {
     // Check if the user is an admin
     if(!isAdmin(interaction.member)) {
-        interaction.reply({ content: "You're not an admin !", ephemeral: true });
+        await interaction.editReply({ content: "You're not an admin !" });
         return null;
     }
 
@@ -265,16 +259,12 @@ async function refreshList(interaction, type, url, oldCount) {
     if(refreshed == null) {
         logger.error("Error refreshing " + type + " list, fallback to previous list");
 
-        if(interaction != null) {
-            await interaction.reply({ content: "Error refreshing " + type + " list, fallback to previous list", ephemeral: true });
-        }
+            await interaction.editReply({ content: "Error refreshing " + type + " list, fallback to previous list" });
         return null;
     }
 
     const newCount = refreshed.length;
-    if(interaction != null) {
-        await interaction.reply({ content: "Succès ! " + (newCount - oldCount) + " " + type + " ajoutés. Total : " + newCount, ephemeral: true });
-    }
+    await interaction.editReply({ content: "Succès ! " + (newCount - oldCount) + " " + type + " ajoutés. Total : " + newCount });
 
     return refreshed;
 }
@@ -307,20 +297,19 @@ function startClient(player) {
                 case 'kaamelott-audio': await kaamelottAudio.searchAndReply(interaction, sounds, player, getCacheFilePath("", "sounds")); break;
                 case 'kaamelott-gifs': await kaamelottGifs.searchAndReply(interaction, gifs, null, getCacheFilePath("", "gifs")); break;
                 case 'kaamelott-refresh':
-                    // TODO mieux
+                    await interaction.reply({ content: "En cours de refresh...", ephemeral: true });
                     if(interaction.options.getBoolean('audio')) {
                         await refreshList(interaction, "sounds", audioBaseUrl, sounds.length);
-                        break; // Maybe use interaction.edit instead of reply when sending 2 commands at once. We could refresh both lists at once
                     }
                     if(interaction.options.getBoolean('gifs')) {
                         await refreshList(interaction, "gifs", gifsBaseUrl, gifs.length);
-                        break;
                     }
-                    await interaction.reply({ embeds: [sassyReply], files: [sassyFile], ephemeral: true });
+                    if(!interaction.options.getBoolean('gifs') && !interaction.options.getBoolean('audio')) {
+                        await interaction.editReply({ embeds: [sassyReply], files: [sassyFile], ephemeral: true });
+                    }
                     break;
 
                 case 'kaamelott-clear': 
-                    // TODO mieux
                     if(interaction.options.getBoolean('audio')) {
                         await askToClearCache(interaction, "sounds");
                         break;
@@ -340,13 +329,16 @@ function startClient(player) {
         if (interaction.isButton()) {
             if(interaction.customId == 'stopCurrentSound') {
                 kaamelottAudio.stopAudio(player);
-                interaction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
+                await interaction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
             } else if(interaction.customId.startsWith('replayAudio_')) {
+                await interaction.reply({ content: 'Swing it baby !', ephemeral: true });
+
                 const tempFilePath = interaction.customId.substring('replayAudio_'.length);
                 const filename = fs.readFileSync(tempFilePath, 'utf8'); // Use the content of the temp file as the filename
                 logger.debug("Replaying file " + filename);
-                kaamelottAudio.playAudio(interaction.member?.voice.channel, player, getCacheFilePath(filename, "sounds"));
-                interaction.reply({ content: 'Replaying file ' + filename, ephemeral: true });
+                await interaction.editReply({ content: 'Replaying file ' + filename });
+                await kaamelottAudio.playAudio(interaction.member?.voice.channel, player, getCacheFilePath(filename, "sounds"));
+                await interaction.editReply({ content: 'Done' });
             } else if(interaction.customId == 'clearsoundsCache') {
                 clearCache(interaction, "sounds", ".mp3");
             } else if(interaction.customId == 'cleargifsCache') {
@@ -365,11 +357,12 @@ function getCacheFilePath(filename, type) {
     const filepath = cacheDirectory + filename;
     return filepath;
 }
+
 // Show a warning and ask for a confirmation
 // The user can accept by clicking on the button
-async function askToClearCache(interaction, type) {
+async function askToClearCache(interaction, type) {    
     if(!isAdmin(interaction.member)) {
-        interaction.reply({ content: "You're not an admin !", ephemeral: true });
+        await interaction.reply({ content: "You're not an admin !", ephemeral: true });
         return;
     }
 
@@ -390,8 +383,10 @@ async function askToClearCache(interaction, type) {
 // Clear local cached files
 // Sounds and Gifs, according to the type
 async function clearCache(interaction, type, fileExt) {
+    await interaction.reply({ content: "Essayons de nettoyer ce merdier", ephemeral: true });
+
     if(!isAdmin(interaction.member)) {
-        interaction.reply({ content: "You're not an admin !", ephemeral: true });
+        await interaction.editReply({ content: "You're not an admin !" });
         return;
     }
 
@@ -414,7 +409,7 @@ async function clearCache(interaction, type, fileExt) {
             logger.error("Error while deleting file " + file + " : ", err);
         }
     }
-    interaction.reply({ content: "Cache cleared. " + nbDeletedFiles + " files deleted, " + nbSkippedFiles + " files skipped.", ephemeral: true });
+    await interaction.editReply({ content: "Cache cleared. " + nbDeletedFiles + " files deleted, " + nbSkippedFiles + " files skipped." });
 }
 
 function isAdmin(member) {

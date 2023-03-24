@@ -18,6 +18,7 @@ let isBotPlayingSound = false;
 
 async function searchAndReply(interaction, sounds, player, cacheDirectory) {
     logger.debug("YOU RAAAAANG ???");
+    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
     
     // Get the options and subcommands (if any)
     let silent = false;
@@ -104,20 +105,19 @@ async function searchAndReply(interaction, sounds, player, cacheDirectory) {
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 async function replyWithMedia(interaction, player, sound, silent = false, cacheDirectory, warning = "", options = null) {
-   
     if(isBotPlayingSound) {
-        await interaction.reply("Molo fiston, j'ai pas fini la dernière commande !");
+        await interaction.editReply("Molo fiston, j'ai pas fini la dernière commande !");
         return;
     }
 
     if (!interaction.member?.voice.channel) {
-        await interaction.reply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
+        await interaction.editReply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
         return;
     }
 
     if(sound == null || sound.file == null) {
         logger.error("Sound is null or file is null, it should not happen. sound : ", sound);
-        await interaction.reply("Une erreur survenue est inattandue !");
+        await interaction.editReply("Une erreur survenue est inattandue !");
         return;
     }
 
@@ -185,7 +185,7 @@ async function replyWithMedia(interaction, player, sound, silent = false, cacheD
             .setEmoji('🔇')
         );
 
-    await interaction.reply({ embeds: [reply], components: [rowButtons] });
+    await interaction.editReply({ embeds: [reply], components: [rowButtons] });
 
     if(silent) {
         logger.debug("Silent mode, not playing audio");
@@ -208,7 +208,6 @@ async function connectToVoiceChannel(channel) {
 	} catch (error) {
         logger.error("Error connecting to voice channel : ", error);
 		connection.destroy();
-        // return null;
         throw error;
 	}
 }

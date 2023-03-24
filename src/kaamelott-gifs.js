@@ -7,7 +7,7 @@ const { gifsBaseUrl } = require('../conf/config');
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 
 async function searchAndReply(interaction, gifs, player = null, cacheDirectory) {
-
+    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
     logger.debug("Allo?");
     
     // Get the options and subcommands (if any)
@@ -90,6 +90,7 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
 async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", options = null) {
     if(gif == null || gif.filename == null) {
         logger.error("Gif is null or file is null, it should not happen. gif : ", gif);
+        interaction.editReply({ content: "Erreur inattendue, je n'ai pas réussi à trouver le fichier"});
         return;
     }
 
@@ -108,7 +109,7 @@ async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", op
     } catch(error) {
         logger.warn("Error while trying to cache file at " + filepath + " : ", error);
         // TODO try to send the url instead of the file
-        await interaction.reply("Je n'ai pas réussi à télécharger le fichier " + fullUrl + " : " + error); // To delete when the retry with fullUrl is implemented
+        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl + " : " + error); // To delete when the retry with fullUrl is implemented
         return;
     }
 
@@ -138,11 +139,7 @@ async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", op
         reply.addFields({ name: 'Warning', value: warning, inline: false});
     }
 
-    try {
-        await interaction.reply({ embeds: [reply], files: [gifFile]}); // TODO try to set a longer timeout
-    } catch(error) {
-        logger.error("Error while replying to user : ", error);
-    }
+    await interaction.editReply({ embeds: [reply], files: [gifFile]});
     logger.debug("Embed sent to user");
 }
 
