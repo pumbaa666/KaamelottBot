@@ -1,10 +1,16 @@
-const path = require('path');
-const fs = require('fs');
-const superagent = require('superagent');
-const utils = require('./utils');
-const logger = require('../conf/logger');
-const { audioBaseUrl } = require('../conf/config');
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+// const path = require('path');
+// const fs = require('fs');
+// const superagent = require('superagent');
+// const utils = require('./utils');
+// const logger = require('../conf/logger');
+// const { audioBaseUrl } = require('../conf/config');
+// const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+import { logger } from "../conf/logger";
+// import { Interaction } from "discord.js";
+import type { Interaction } from "discord.js";
+import type { AudioPlayer } from "@discordjs/voice";
+// const { Player } = require('discord.js');
+
 const {
 	StreamType,
 	createAudioResource,
@@ -16,7 +22,14 @@ const {
 
 let isBotPlayingSound = false;
 
-async function searchAndReply(interaction, sounds, player, cacheDirectory) {
+type Character = {
+    character: string,
+    episode: string,
+    title: string,
+}
+
+
+async function searchAndReplyAudio(interaction: Interaction, sounds: Sound[], player: AudioPlayer, cacheDirectory: string) {
     logger.debug("YOU RAAAAANG ???");
     await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
     
@@ -32,7 +45,7 @@ async function searchAndReply(interaction, sounds, player, cacheDirectory) {
     }
 
     if(options.length == 0) { // Pas d'option, on en file un au hasard
-        replyWithMedia(interaction, player, sounds[utils.getRandomInt(sounds.length - 1)], silent, cacheDirectory);
+        replyWithMediaAudio(interaction, player, sounds[utils.getRandomInt(sounds.length - 1)], silent, cacheDirectory);
         return;
     }
 
@@ -58,15 +71,16 @@ async function searchAndReply(interaction, sounds, player, cacheDirectory) {
     }
         
     else { // Search for each options with corresponding value
-        const optionMapping = {
+        const optionMapping: { [key: string]: string } = {
+        // const optionMapping = {
             "perso": "character",
             "titre": "episode",
             "texte": "title" // Oui c'est fucked up mais c'est comme ça dans l'API
         };
         
-        const individualResults = [];
+        const individualResults:{ [key: string]: Sound[] } = {}; // Avant : []
         options.forEach(option => {
-            const optName = optionMapping[option.name];
+            const optName: string = optionMapping[option.name];
             individualResults[optName] = [];
             sounds.forEach(sound => {
                 if(sound[optName].toLowerCase().includes(option.value.toLowerCase())) {
@@ -90,7 +104,7 @@ async function searchAndReply(interaction, sounds, player, cacheDirectory) {
 
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
         warning = warning + "Aucun résultat, j'en file un au hasard\n";
-        replyWithMedia(interaction, player, sounds[utils.getRandomInt(sounds.length)], silent, cacheDirectory, warning, options);
+        replyWithMediaAudio(interaction, player, sounds[utils.getRandomInt(sounds.length)], silent, cacheDirectory, warning, options);
         return;
     }
     
@@ -98,13 +112,13 @@ async function searchAndReply(interaction, sounds, player, cacheDirectory) {
         warning = warning + "1 résultat parmi " + results.length + "\n";
     }
     
-    replyWithMedia(interaction, player, results[utils.getRandomInt(results.length)], silent, cacheDirectory, warning, options);
+    replyWithMediaAudio(interaction, player, results[utils.getRandomInt(results.length)], silent, cacheDirectory, warning, options);
 
     return;
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function replyWithMedia(interaction, player, sound, silent = false, cacheDirectory, warning = "", options = null) {
+async function replyWithMediaAudio(interaction: typeof Interaction, player: AudioPlayer, sound: Sound, silent = false, cacheDirectory: string, warning = "", options: Option[] = null) {
     if(isBotPlayingSound) {
         await interaction.editReply("Molo fiston, j'ai pas fini la dernière commande !");
         return;
@@ -195,11 +209,10 @@ async function replyWithMedia(interaction, player, sound, silent = false, cacheD
     await playAudio(interaction.member?.voice.channel, player, filepath);
 }
 
-async function connectToVoiceChannel(channel) {
+async function connectToVoiceChannel(channel: typeof VoiceChannel) {
 	const connection = joinVoiceChannel({
 		channelId: channel.id,
 		guildId: channel.guild.id,
-		// @ts-expect-error Currently voice is built in mind with API v10 whereas discord.js v13 uses API v9.
 		adapterCreator: channel.guild.voiceAdapterCreator,
 	});
 	try {
@@ -212,7 +225,7 @@ async function connectToVoiceChannel(channel) {
 	}
 }
 
-async function playAudio(channel, player, filepath) {
+async function playAudio(channel: typeof VoiceChannel, player: AudioPlayer, filepath: string) {
     if(isBotPlayingSound) {
         return;
     }
@@ -259,7 +272,7 @@ async function playAudio(channel, player, filepath) {
 	return entersState(player, AudioPlayerStatus.Playing, 5000);
 }
 
-function stopAudio(player)
+function stopAudio(player: AudioPlayer)
 {
     logger.debug("Stopping current sound");
     isBotPlayingSound = false;
@@ -272,7 +285,7 @@ function stopAudio(player)
 }
 
 module.exports = {
-    searchAndReply,
+    searchAndReplyAudio,
     playAudio,
     stopAudio,
 }

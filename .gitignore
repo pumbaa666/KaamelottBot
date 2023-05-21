@@ -63,5 +63,7 @@ typings/
 #/sounds/*.mp3
 /sounds.bkp
 /gifs/*.gif
-conf/auth-prod.json
+/conf/auth-prod.json
 /logs/*.log
+/src/*.js
+/src/*.map

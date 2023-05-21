@@ -1,12 +1,13 @@
-const path = require('path');
-const fs = require('fs');
-const superagent = require('superagent');
+// const path = require('path');
+// const fs = require('fs');
+// const superagent = require('superagent');
 const utils = require('./utils');
-const logger = require('../conf/logger');
-const { gifsBaseUrl } = require('../conf/config');
-const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+// const logger = require('../conf/logger');
+// const { gifsBaseUrl } = require('../conf/config');
+// const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+import { logger } from "../conf/logger";
 
-async function searchAndReply(interaction, gifs, player = null, cacheDirectory) {
+async function searchAndReplyGif(interaction: typeof Interaction, gifs: Gif[], player: AudioPlayer = null, cacheDirectory: string) {
     await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
     logger.debug("Allo?");
     
@@ -15,7 +16,7 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
     logger.debug('options : ', options);
 
     if(options.length == 0) { // Pas d'option, on en file un au hasard
-        replyWithMedia(interaction, gifs[utils.getRandomInt(gifs.length - 1)], cacheDirectory);
+        replyWithMediaGif(interaction, gifs[utils.getRandomInt(gifs.length - 1)], cacheDirectory);
         return;
     }
 
@@ -75,7 +76,7 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
 
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
         warning = warning + "Aucun résultat, j'en file un au hasard\n";
-        replyWithMedia(interaction, gifs[utils.getRandomInt(gifs.length)], cacheDirectory, warning, options);
+        replyWithMediaGif(interaction, gifs[utils.getRandomInt(gifs.length)], cacheDirectory, warning, options);
         return;
     }
     
@@ -83,13 +84,13 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
         warning = warning + "1 résultat parmi " + results.length + "\n";
     }
     
-    replyWithMedia(interaction, results[utils.getRandomInt(results.length)], cacheDirectory, warning, options);
+    replyWithMediaGif(interaction, results[utils.getRandomInt(results.length)], cacheDirectory, warning, options);
 
     return;
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", options = null) {
+async function replyWithMediaGif(interaction: typeof Interaction, gif: Gif, cacheDirectory: string, warning = "", options: Option[] = null) {
     if(gif == null || gif.filename == null) {
         logger.error("Gif is null or file is null, it should not happen. gif : ", gif);
         interaction.editReply({ content: "Erreur inattendue, je n'ai pas réussi à trouver le fichier"});
@@ -146,5 +147,5 @@ async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", op
 }
 
 module.exports = {
-    searchAndReply,
+    searchAndReplyGif,
 };

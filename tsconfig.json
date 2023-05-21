@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": false, // TODO true ?
+        "removeComments": true,
+        "preserveConstEnums": true, // TODO false ?
+        // "outFile": "runnable/kaamelot-bot-full.js",
+        // "sourceMap": true,
+
+        "isolatedModules": true, // TODO try
+        // "lib": ["es6"],
+    },
+    "include": ["src/**/*.ts", "conf/**/*.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
+}

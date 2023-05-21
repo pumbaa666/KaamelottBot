@@ -2,7 +2,7 @@
 // Basic Bot (mon usage) https://github.com/discordjs/voice-examples/blob/main/basic/src/adapter.ts
 // Radio Bot : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 
-// TODO passer de js en ts
+// TODO Les erreurs ne sont pas loggée dans ./logs, mais visibles dans `journalctl -xe` (en tout cas quand le bot est démarré en tant que service)
 
 const path = require('path');
 const fs = require('fs');
@@ -12,9 +12,11 @@ const kaamelottGifs = require('./kaamelott-gifs');
 const { client_id, token } = require('../conf/auth-prod.json');
 const { audioBaseUrl, gifsBaseUrl } = require('../conf/config');
 const { REST, Routes, Client } = require('discord.js');
-const { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const {	createAudioPlayer } = require("@discordjs/voice");
-const logger = require('../conf/logger');
+const { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
+const { Interaction, Role, Member, VoiceChannel } = require('discord.js');
+const {	createAudioPlayer, AudioPlayer } = require("@discordjs/voice");
+// const logger2 = require('../conf/logger');
+import { logger } from "../conf/logger";
 logger.level = 'debug';
 
 const { GatewayIntentBits } = require("discord-api-types/v10");
@@ -25,8 +27,48 @@ const STRING = 3; // https://discord.com/developers/docs/interactions/applicatio
 const BOOLEAN = 5;
 const ADMINISTRATOR = 8;
 
-let sounds = null;
-let gifs = null;
+let sounds: Sound[] = null;
+let gifs: Gif[] = null;
+
+type Sound = {
+    character: string;
+    episode: string;
+    file: string;
+    title: string;
+};
+
+type Gif = {
+    quote: string, // title / text
+    characters: string[];
+    characters_speaking: string[];
+    filename: string;
+};
+
+type User = {
+    id: string;
+    username: string;
+    discriminator: string;
+    avatar: string;
+    public_flags: number;
+    bot: boolean;
+};
+
+type Option = {
+    name: string;
+    value: string;
+};
+
+// type Member = { // TODO check la doc que c'est bien ça
+//     user: User;
+//     nick: string;
+//     roles: string[];
+//     joined_at: string;
+//     premium_since: string;
+//     deaf: boolean;
+//     mute: boolean;
+//     pending: boolean;
+//     permissions: string;
+// };
 
 // Entry point
 async function startBot() {
@@ -48,7 +90,7 @@ async function startBot() {
         return;
     }
 
-    const player = createAudioPlayer();
+    const player: typeof AudioPlayer = createAudioPlayer();
     if(player == null) {
         logger.error("Error creating audio player, aborting");
         return;
@@ -75,7 +117,7 @@ async function startBot() {
 // Define all the commands of the bot
 // Note : kick the bot from the Discord channel before you update the commands
 // and then re-invite it
-async function registerSlashCommands() {
+async function registerSlashCommands(): Promise<boolean> {
     const commands = [
         {
             name: 'ping',
@@ -192,6 +234,7 @@ async function registerSlashCommands() {
         logger.debug("Started refreshing application (/) commands : " + (commands.map(command => command.name)));
         await rest.put(Routes.applicationCommands(client_id), { body: commands });
         logger.info("Successfully reloaded application (/) commands.");
+
         return true;
     } catch (error) {
         logger.error("Error while refreshing application (/) commands : ", error);
@@ -200,14 +243,14 @@ async function registerSlashCommands() {
     return false;
 }
 
-async function parseGifsJson(url) {
+async function parseGifsJson(url: string) {
     const result = await parseJson(url, "gifs");
     if(result != null) {
         gifs = result;
     }
 }
 
-async function parseAudioJson(url) {
+async function parseAudioJson(url: string) {
     const result = await parseJson(url, "sounds");
     if(result != null) {    
         sounds = result;
@@ -215,7 +258,7 @@ async function parseAudioJson(url) {
 }
 
 // Parse a JSON file from a URL and return an array of objects (Sounds or Gifs)
-async function parseJson(url, type) {
+async function parseJson(url: string, type: string) { // TODO Type as an enum
     const fullUrl = url + type + ".json";
     let response = null;
 
@@ -247,7 +290,7 @@ async function parseJson(url, type) {
 }
 
 // Refresh the Audio or Gifs list by parsing the appropriate json file from github
-async function refreshList(interaction, type, url, oldCount) {
+async function refreshList(interaction: typeof Interaction, type: string, url: string, oldCount: number) {
     // Check if the user is an admin
     if(!isAdmin(interaction.member)) {
         await interaction.editReply({ content: "You're not an admin !" });
@@ -270,7 +313,7 @@ async function refreshList(interaction, type, url, oldCount) {
 }
 
 // Register the bot on Discord and start listening to events
-function startClient(player) {
+function startClient(player: typeof AudioPlayer) {
     const client = new Client({
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates],
     });
@@ -279,7 +322,7 @@ function startClient(player) {
         logger.info("KaamelottBot is live ! C'est quoi que t'as pas compris ?");
     });
     
-    client.on("interactionCreate", async (interaction) => {
+    client.on("interactionCreate", async (interaction: typeof Interaction) => {
         // The user sent a slash command
         if (interaction.isChatInputCommand()) {
             // const sassyFile = new File("./resources/eye-on-you.gif", "eye-on-you.gif");
@@ -294,8 +337,8 @@ function startClient(player) {
                 
             switch(interaction.commandName) {
                 case 'ping': await interaction.reply('Pong!'); break;
-                case 'kaamelott-audio': await kaamelottAudio.searchAndReply(interaction, sounds, player, getCacheFilePath("", "sounds")); break;
-                case 'kaamelott-gifs': await kaamelottGifs.searchAndReply(interaction, gifs, null, getCacheFilePath("", "gifs")); break;
+                case 'kaamelott-audio': await kaamelottAudio.searchAndReplyAudio(interaction, sounds, player, getCacheFilePath("", "sounds")); break;
+                case 'kaamelott-gifs': await kaamelottGifs.searchAndReplyGif(interaction, gifs, null, getCacheFilePath("", "gifs")); break;
                 case 'kaamelott-refresh':
                     await interaction.reply({ content: "En cours de refresh...", ephemeral: true });
                     if(interaction.options.getBoolean('audio')) {
@@ -351,7 +394,7 @@ function startClient(player) {
     client.login(token);
 }
 
-function getCacheFilePath(filename, type) {
+function getCacheFilePath(filename: string, type: string) {
     const currentFilePath = path.resolve(__dirname);
     const cacheDirectory = currentFilePath + "/../"+type+"/";
     const filepath = cacheDirectory + filename;
@@ -360,7 +403,7 @@ function getCacheFilePath(filename, type) {
 
 // Show a warning and ask for a confirmation
 // The user can accept by clicking on the button
-async function askToClearCache(interaction, type) {    
+async function askToClearCache(interaction: typeof Interaction, type: string) {    
     if(!isAdmin(interaction.member)) {
         await interaction.reply({ content: "You're not an admin !", ephemeral: true });
         return;
@@ -382,7 +425,7 @@ async function askToClearCache(interaction, type) {
 }
 // Clear local cached files
 // Sounds and Gifs, according to the type
-async function clearCache(interaction, type, fileExt) {
+async function clearCache(interaction: typeof Interaction, type: string, fileExt: string) {
     await interaction.reply({ content: "Essayons de nettoyer ce merdier", ephemeral: true });
 
     if(!isAdmin(interaction.member)) {
@@ -412,11 +455,12 @@ async function clearCache(interaction, type, fileExt) {
     await interaction.editReply({ content: "Cache cleared. " + nbDeletedFiles + " files deleted, " + nbSkippedFiles + " files skipped." });
 }
 
-function isAdmin(member) {
+function isAdmin(member: typeof Member) {
     if(member == null || member.roles == null || member.roles.cache == null) {
         logger.warn("Roles are null ! Member : ", member);
         return false;
     }
+
     return member.roles.cache.some(role => role.name === 'Admin');
 }
 

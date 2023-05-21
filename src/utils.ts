@@ -1,8 +1,8 @@
-function getRandomInt(max) {
+function getRandomInt(max: number) {
     return Math.floor(Math.random() * Math.floor(max));
 }
 
-function findArraysIntersection(arr1, arrs){
+function findArraysIntersection(arr1: any[], arrs: any[]){
     // IF there are no arrays to compare to, return everything (it inteserect with itself).
     if(arrs == null || arrs.length == 0) {
         return arr1;

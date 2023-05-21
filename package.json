@@ -2,10 +2,21 @@
 	"name": "kaamelott_bot",
 	"version": "1.0.0",
 	"description": "My First Discord Bot, dedicated to Kaamelott",
-	"main": "bot.js",
+	"main": "src/bot.js",
 	"author": "Pumbaa",
+	"license": "Gnu GPL v3",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/pumbaa666/KaamelottBot.git",
+		"directory": "KaamelottBot"
+	},
+	"engines": {
+		"node": ">=19.0.0"
+	},
 	"scripts": {
-		"start": "node ./src/bot.js"
+		"start": "node ./src/bot.js",
+		"compile": "tsc",
+		"ts": "npm run compile && npm run start"
 	},
 	"dependencies": {
 		"@discordjs/voice": "^0.15.0",
