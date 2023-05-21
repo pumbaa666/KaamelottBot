@@ -6,7 +6,7 @@ What is it
 My friends and I are huge fans of the french TV Series [**Kaamelott**](https://fr.wikipedia.org/wiki/Kaamelott) and we can't stop ourselves to quote infamous inside joke about/from the show.
 So when I stumbled upon [a repository](https://github.com/2ec0b4/kaamelott-soundboard) listing a bunch of quotes in small audio format I couldn't resist the urge to use it.
 
-**KaamelottBot** is a silly bot who plays quotes in your current Discord audio-channel when you invoke it in any text-channel with `/kaamelott-audio (+option)`
+**KaamelottBot** is a silly bot who plays quotes in your current Discord voice-channel when you invoke it in any text-channel with `/kaamelott-audio (+option)`
 It also can play animated gifs with `/kaamelott-gifs (+option)` 
 
 i.e : 
@@ -34,11 +34,11 @@ The files comes from [kaamelott-soundboard GitHub](https://github.com/2ec0b4/kaa
 
 The file names and the full quotes are listed in [a JSON file](https://github.com/2ec0b4/kaamelott-soundboard/blob/master/sounds/sounds.json) (again, copy on [my github](https://github.com/pumbaa666/KaamelottBot/tree/master/sounds/sounds.json))
 
-It take a random quote from the result, cache the audio locally and play the sound in the Discord audio-channel you're connected too.
+It take a random quote from the result, cache the audio locally and play the sound in the Discord voice-channel you're connected too.
 
-The cached files are stored under `KaamelottBot/sounds/cache`
+The cached files are stored under `KaamelottBot/sounds/`
 
-You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot/sounds/cache`.
+You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot/sounds/`.
 
 Hosting your own Server
 ---
@@ -102,6 +102,8 @@ which node # Note the absolute path of the node executable
 pwd # Note the absolute path of the KaamelotBot directory
 # You will use them in the following file :
 sudo cp KaamelottBot/resources/kaamelott_bot.service /etc/systemd/system/kaamelott_bot.service
+sudo vi /etc/systemd/system/kaamelott_bot.service
+    # Put the values in ExecStart
 
 sudo systemctl daemon-reload # Not mandatory on most case. But doesn't hurt.
 sudo systemctl start kaamelott_bot.service
