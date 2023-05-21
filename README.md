@@ -57,6 +57,7 @@ You will find the source here : https://github.com/pumbaa666/KaamelottBot.git
 ```
 git clone https://github.com/pumbaa666/KaamelottBot.git
 cd KaamelottBot
+npm install -g typescript
 npm install --save-dev @discordjs/uws@^10.149.0 # Or npm install -g npm-install-peers
 npm install
 cp conf/auth-dev.json conf/auth-prod.json
