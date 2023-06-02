@@ -40,9 +40,11 @@ The cached files are stored under `KaamelottBot/sounds/`
 
 You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot/sounds/`.
 
+Same goes for animated Gifs with the command `/kaamelott-gifs`.
+
 Hosting your own Server
 ---
-You can host the server on your own machine and not depending on Pumbaa.
+You can host the server on your own machine and not depends on Pumbaa.
 
 Server Requirements
 ---
@@ -103,7 +105,8 @@ pwd # Note the absolute path of the KaamelotBot directory
 # You will use them in the following file :
 sudo cp KaamelottBot/resources/kaamelott_bot.service /etc/systemd/system/kaamelott_bot.service
 sudo vi /etc/systemd/system/kaamelott_bot.service
-    # Put the values in ExecStart
+    # Put the values in ExecStart. Example :
+    # ExecStart=/home/USER/.nvm/versions/node/v19.7.0/bin/node /home/USER/programmation/node/KaamelottBot/src/bot.js
 
 sudo systemctl daemon-reload # Not mandatory on most case. But doesn't hurt.
 sudo systemctl start kaamelott_bot.service
