@@ -369,9 +369,8 @@ function startClient(player) {
     });
     client.on("interactionCreate", function (interaction) { return __awaiter(_this, void 0, void 0, function () {
         var commandInteraction, filename, sassyFile, sassyReply, _a, buttonInteraction, tempFilePath, filename;
-        var _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
                     if (!interaction.isChatInputCommand()) return [3, 24];
                     commandInteraction = interaction;
@@ -394,43 +393,43 @@ function startClient(player) {
                     return [3, 23];
                 case 1: return [4, commandInteraction.reply('Pong!')];
                 case 2:
-                    _c.sent();
+                    _b.sent();
                     return [3, 23];
                 case 3: return [4, kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", MEDIA_TYPE.sounds))];
                 case 4:
-                    _c.sent();
+                    _b.sent();
                     return [3, 23];
                 case 5: return [4, kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", MEDIA_TYPE.gifs))];
                 case 6:
-                    _c.sent();
+                    _b.sent();
                     return [3, 23];
                 case 7:
                     if (!isBotRefreshing) return [3, 9];
                     return [4, commandInteraction.reply({ content: "Oula, tout doux mon grand, j'suis en plein refresh. Va te chercher un Pastis.", ephemeral: true })];
                 case 8:
-                    _c.sent();
+                    _b.sent();
                     return [2];
                 case 9: return [4, commandInteraction.reply({ content: "En cours de refresh...", ephemeral: true })];
                 case 10:
-                    _c.sent();
+                    _b.sent();
                     isBotRefreshing = true;
                     if (!interaction.options.getBoolean('audio')) return [3, 12];
                     return [4, refreshList(commandInteraction, MEDIA_TYPE.sounds, config_1.audioBaseUrl, sounds.length)];
                 case 11:
-                    _c.sent();
-                    _c.label = 12;
+                    _b.sent();
+                    _b.label = 12;
                 case 12:
                     if (!interaction.options.getBoolean('gifs')) return [3, 14];
                     return [4, refreshList(commandInteraction, MEDIA_TYPE.gifs, config_1.gifsBaseUrl, gifs.length)];
                 case 13:
-                    _c.sent();
-                    _c.label = 14;
+                    _b.sent();
+                    _b.label = 14;
                 case 14:
                     if (!(!interaction.options.getBoolean('gifs') && !interaction.options.getBoolean('audio'))) return [3, 16];
                     return [4, commandInteraction.editReply({ embeds: [sassyReply], files: [sassyFile] })];
                 case 15:
-                    _c.sent();
-                    _c.label = 16;
+                    _b.sent();
+                    _b.label = 16;
                 case 16:
                     isBotRefreshing = false;
                     return [3, 23];
@@ -438,57 +437,53 @@ function startClient(player) {
                     if (!interaction.options.getBoolean('audio')) return [3, 19];
                     return [4, askToClearCache(commandInteraction, MEDIA_TYPE.sounds)];
                 case 18:
-                    _c.sent();
+                    _b.sent();
                     return [3, 23];
                 case 19:
                     if (!interaction.options.getBoolean('gifs')) return [3, 21];
                     return [4, askToClearCache(commandInteraction, MEDIA_TYPE.gifs)];
                 case 20:
-                    _c.sent();
+                    _b.sent();
                     return [3, 23];
                 case 21: return [4, commandInteraction.reply({ embeds: [sassyReply], files: [sassyFile] })];
                 case 22:
-                    _c.sent();
+                    _b.sent();
                     return [3, 23];
                 case 23: return [2];
                 case 24:
-                    if (!interaction.isButton()) return [3, 33];
+                    if (!interaction.isButton()) return [3, 32];
                     buttonInteraction = interaction;
-                    buttonInteraction.member = buttonInteraction.member;
                     if (!(buttonInteraction.customId == 'stopCurrentSound')) return [3, 26];
                     kaamelottAudio.stopAudio(player);
                     return [4, buttonInteraction.reply({ content: 'Zuuuuuuuut !', ephemeral: true })];
                 case 25:
-                    _c.sent();
-                    return [3, 32];
+                    _b.sent();
+                    return [3, 31];
                 case 26:
-                    if (!buttonInteraction.customId.startsWith('replayAudio_')) return [3, 31];
+                    if (!buttonInteraction.customId.startsWith('replayAudio_')) return [3, 30];
                     return [4, buttonInteraction.reply({ content: 'Swing it baby !', ephemeral: true })];
                 case 27:
-                    _c.sent();
+                    _b.sent();
                     tempFilePath = buttonInteraction.customId.substring('replayAudio_'.length);
                     filename = fs.readFileSync(tempFilePath, 'utf8');
                     logger_1.logger.debug("Replaying file " + filename);
                     return [4, buttonInteraction.editReply({ content: 'Replaying file ' + filename })];
                 case 28:
-                    _c.sent();
-                    return [4, kaamelottAudio.playAudio((_b = buttonInteraction.member) === null || _b === void 0 ? void 0 : _b.voice.channel, player, getCacheFilePath(filename, MEDIA_TYPE.sounds))];
+                    _b.sent();
+                    return [4, kaamelottAudio.playAudio(buttonInteraction, player, getCacheFilePath(filename, MEDIA_TYPE.sounds))];
                 case 29:
-                    _c.sent();
-                    return [4, buttonInteraction.editReply({ content: 'Done' })];
+                    _b.sent();
+                    return [3, 31];
                 case 30:
-                    _c.sent();
-                    return [3, 32];
-                case 31:
                     if (buttonInteraction.customId == 'clearsoundsCache') {
                         clearCache(interaction, MEDIA_TYPE.sounds, ".mp3");
                     }
                     else if (buttonInteraction.customId == 'cleargifsCache') {
                         clearCache(interaction, MEDIA_TYPE.gifs, ".gif");
                     }
-                    _c.label = 32;
+                    _b.label = 31;
+                case 31: return [2];
                 case 32: return [2];
-                case 33: return [2];
             }
         });
     }); });

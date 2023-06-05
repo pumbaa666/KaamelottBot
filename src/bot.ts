@@ -374,7 +374,6 @@ function startClient(player: AudioPlayer) {
         // The user clicked on a button
         if (interaction.isButton()) {
             const buttonInteraction = interaction as ButtonInteraction
-            buttonInteraction.member = buttonInteraction.member as GuildMember;
             if(buttonInteraction.customId == 'stopCurrentSound') {
                 kaamelottAudio.stopAudio(player);
                 await buttonInteraction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
@@ -385,8 +384,7 @@ function startClient(player: AudioPlayer) {
                 const filename = fs.readFileSync(tempFilePath, 'utf8'); // Use the content of the temp file as the filename
                 logger.debug("Replaying file " + filename);
                 await buttonInteraction.editReply({ content: 'Replaying file ' + filename });
-                await kaamelottAudio.playAudio(buttonInteraction.member?.voice.channel, player, getCacheFilePath(filename, MEDIA_TYPE.sounds));
-                await buttonInteraction.editReply({ content: 'Done' });
+                await kaamelottAudio.playAudio(buttonInteraction, player, getCacheFilePath(filename, MEDIA_TYPE.sounds));
             } else if(buttonInteraction.customId == 'clearsoundsCache') {
                 clearCache(interaction, MEDIA_TYPE.sounds, ".mp3");
             } else if(buttonInteraction.customId == 'cleargifsCache') {

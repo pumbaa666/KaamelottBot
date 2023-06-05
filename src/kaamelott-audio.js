@@ -140,54 +140,46 @@ function searchAndReplyAudio(interaction, sounds, player, cacheDirectory) {
 }
 exports.searchAndReplyAudio = searchAndReplyAudio;
 function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory, warning, options) {
-    var _a, _b;
     if (silent === void 0) { silent = false; }
     if (warning === void 0) { warning = ""; }
     if (options === void 0) { options = null; }
     return __awaiter(this, void 0, void 0, function () {
         var filename, fullUrl, filepath, response, error_1, reply, optionsInline, tmpFilePath, rowButtons;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     if (!isBotPlayingSound) return [3, 2];
                     return [4, interaction.editReply("Molo fiston, j'ai pas fini la dernière commande !")];
                 case 1:
-                    _c.sent();
+                    _a.sent();
                     return [2];
                 case 2:
-                    interaction.member = interaction.member;
-                    if (!!((_a = interaction.member) === null || _a === void 0 ? void 0 : _a.voice.channel)) return [3, 4];
-                    return [4, interaction.editReply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)")];
-                case 3:
-                    _c.sent();
-                    return [2];
-                case 4:
-                    if (!(sound == null || sound.file == null)) return [3, 6];
+                    if (!(sound == null || sound.file == null)) return [3, 4];
                     logger_1.logger.error("Sound is null or file is null, it should not happen. sound : ", sound);
                     return [4, interaction.editReply("Une erreur survenue est inattandue !")];
-                case 5:
-                    _c.sent();
+                case 3:
+                    _a.sent();
                     return [2];
-                case 6:
+                case 4:
                     filename = sound.file;
                     fullUrl = config_1.audioBaseUrl + filename;
                     filepath = path.join(cacheDirectory, filename);
-                    _c.label = 7;
-                case 7:
-                    _c.trys.push([7, 10, , 11]);
-                    if (!!fs.existsSync(filepath)) return [3, 9];
+                    _a.label = 5;
+                case 5:
+                    _a.trys.push([5, 8, , 9]);
+                    if (!!fs.existsSync(filepath)) return [3, 7];
                     logger_1.logger.debug("Cached file does not exist, downloading it from " + fullUrl);
                     return [4, superagent.get(fullUrl)];
-                case 8:
-                    response = _c.sent();
+                case 6:
+                    response = _a.sent();
                     fs.writeFileSync(filepath, response.body);
-                    _c.label = 9;
-                case 9: return [3, 11];
-                case 10:
-                    error_1 = _c.sent();
+                    _a.label = 7;
+                case 7: return [3, 9];
+                case 8:
+                    error_1 = _a.sent();
                     logger_1.logger.warn("Error while trying to cache file at " + filepath + " : ", error_1);
-                    return [3, 11];
-                case 11:
+                    return [3, 9];
+                case 9:
                     logger_1.logger.debug("Sending embed to user. Warning : " + warning + ", options : ", options);
                     reply = new discord_js_1.EmbedBuilder()
                         .setColor(0x0099FF)
@@ -216,15 +208,15 @@ function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory,
                         .setStyle(discord_js_1.ButtonStyle.Secondary)
                         .setEmoji('🔇'));
                     return [4, interaction.editReply({ embeds: [reply], components: [rowButtons] })];
-                case 12:
-                    _c.sent();
+                case 10:
+                    _a.sent();
                     if (silent) {
                         logger_1.logger.debug("Silent mode, not playing audio");
                         return [2];
                     }
-                    return [4, playAudio((_b = interaction.member) === null || _b === void 0 ? void 0 : _b.voice.channel, player, filepath)];
-                case 13:
-                    _c.sent();
+                    return [4, playAudio(interaction, player, filepath)];
+                case 11:
+                    _a.sent();
                     return [2];
             }
         });
@@ -257,37 +249,42 @@ function connectToVoiceChannel(channel) {
         });
     });
 }
-function playAudio(channel, player, filepath) {
+function playAudio(interaction, player, filepath) {
+    var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var resource, voiceChannel, error_3;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var channel, resource, voiceChannel, error_3;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
+                    interaction.member = interaction.member;
+                    channel = (_a = interaction.member) === null || _a === void 0 ? void 0 : _a.voice.channel;
                     if (isBotPlayingSound) {
                         return [2];
                     }
-                    if (channel == null) {
-                        logger_1.logger.warn("Channel is null, can't play audio");
-                        return [2];
-                    }
+                    if (!(channel == null)) return [3, 2];
+                    return [4, interaction.editReply("⚠️ T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits) ⚠️")];
+                case 1:
+                    _b.sent();
+                    return [2];
+                case 2:
                     isBotPlayingSound = true;
                     resource = createAudioResource(filepath, {
                         inputType: StreamType.Arbitrary,
                     });
                     voiceChannel = null;
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4, connectToVoiceChannel(channel)];
-                case 2:
-                    voiceChannel = _a.sent();
-                    return [3, 4];
+                    _b.label = 3;
                 case 3:
-                    error_3 = _a.sent();
+                    _b.trys.push([3, 5, , 6]);
+                    return [4, connectToVoiceChannel(channel)];
+                case 4:
+                    voiceChannel = _b.sent();
+                    return [3, 6];
+                case 5:
+                    error_3 = _b.sent();
                     isBotPlayingSound = false;
                     logger_1.logger.warn("Error trying to connect to channel : ", error_3);
                     return [2];
-                case 4:
+                case 6:
                     logger_1.logger.debug("connected to voice channel : " + channel.name);
                     try {
                         voiceChannel.subscribe(player);

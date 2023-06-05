@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as superagent from "superagent";
 
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Interaction, ButtonInteraction } from "discord.js";
 import type { CommandInteraction, CommandInteractionOption, Guild, VoiceBasedChannel } from "discord.js";
 import type { AudioPlayer } from "@discordjs/voice";
 import { GuildMember } from "discord.js";
@@ -126,12 +126,6 @@ async function replyWithMediaAudio(interaction: CommandInteraction, player: Audi
         return;
     }
 
-    interaction.member = interaction.member as GuildMember;
-    if (!interaction.member?.voice.channel) {
-        await interaction.editReply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
-        return;
-    }
-
     if(sound == null || sound.file == null) {
         logger.error("Sound is null or file is null, it should not happen. sound : ", sound);
         await interaction.editReply("Une erreur survenue est inattandue !");
@@ -209,7 +203,7 @@ async function replyWithMediaAudio(interaction: CommandInteraction, player: Audi
         return;
     }
 
-    await playAudio(interaction.member?.voice.channel, player, filepath);
+    await playAudio(interaction, player, filepath);
 }
 
 async function connectToVoiceChannel(channel: VoiceBasedChannel) {
@@ -227,13 +221,16 @@ async function connectToVoiceChannel(channel: VoiceBasedChannel) {
 	}
 }
 
-export async function playAudio(channel: VoiceBasedChannel, player: AudioPlayer, filepath: string) {
+export async function playAudio(interaction: CommandInteraction | ButtonInteraction, player: AudioPlayer, filepath: string) {
+    interaction.member = interaction.member as GuildMember;
+    const channel: VoiceBasedChannel = interaction.member?.voice.channel;
+    
     if(isBotPlayingSound) {
         return;
     }
 
     if (channel == null) {
-        logger.warn("Channel is null, can't play audio");
+        await interaction.editReply("🔇 T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits) ⚠️");
         return;
     }
 
