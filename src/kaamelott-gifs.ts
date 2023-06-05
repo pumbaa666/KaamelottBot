@@ -114,9 +114,9 @@ async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cach
             fs.writeFileSync(filepath, response.body);
         }
     } catch(error) {
+        // TODO fallback here
         logger.warn("Error while trying to cache file at " + filepath + " : ", error);
-        // TODO try to send the url instead of the file
-        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl + " : " + error); // To delete when the retry with fullUrl is implemented
+        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl + " : " + error);
         return;
     }
 
@@ -131,7 +131,7 @@ async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cach
         .setAuthor({ name: 'by Pumbaa', iconURL: 'https://avatars.githubusercontent.com/u/34394718?v=4', url: 'https://github.com/pumbaa666' })
         .setDescription(gif.quote)
         .addFields(
-            { name: 'Perso principal', value: gif.characters.join(", "), inline: true },
+            { name: 'Perso principal', value: gif.characters.join(", "), inline: true }, // TODO inclure l'image du perso depuis le dossier `characters-icons`
             { name: 'Autres perso', value: gif.characters_speaking.join(", "), inline: true },
         )
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')

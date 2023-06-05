@@ -3,7 +3,7 @@
         "module": "commonjs",
         "noImplicitAny": false, // TODO true ?
         "removeComments": true,
-        "preserveConstEnums": true, // TODO false ?
+        "preserveConstEnums": true,
         "skipLibCheck": true, // https://github.com/microsoft/TypeScript/issues/46634
         // "outFile": "runnable/kaamelot-bot-full.js",
         // "sourceMap": true,

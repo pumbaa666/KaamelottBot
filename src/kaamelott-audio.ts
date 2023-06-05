@@ -157,7 +157,7 @@ async function replyWithMediaAudio(interaction: CommandInteraction, player: Audi
         .setDescription(sound.title)
         .addFields(
             { name: 'Episode', value: sound.episode, inline: true },
-            { name: 'Personnages', value: sound.character, inline: true },
+            { name: 'Personnages', value: sound.character, inline: true }, // TODO inclure l'image du perso depuis le dossier `characters-icons`
         )
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         // .setImage('https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon.png')
