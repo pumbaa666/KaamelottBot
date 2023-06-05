@@ -250,7 +250,6 @@ function connectToVoiceChannel(channel) {
                     return [2, connection];
                 case 3:
                     error_2 = _a.sent();
-                    logger_1.logger.error("Error connecting to voice channel : ", error_2);
                     connection.destroy();
                     throw error_2;
                 case 4: return [2];

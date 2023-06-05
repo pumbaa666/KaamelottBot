@@ -33,7 +33,8 @@ const ADMINISTRATOR = 8;
 let sounds: Sound[] = null;
 let gifs: Gif[] = null;
 
-type Sound = {
+let isBotRefreshing = false;
+
 export type Sound = {
     character: string;
     episode: string;
@@ -330,16 +331,22 @@ function startClient(player: AudioPlayer) {
                 case 'kaamelott-audio': await kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", "sounds")); break;
                 case 'kaamelott-gifs': await kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", "gifs")); break;
                 case 'kaamelott-refresh':
-                    await interaction.reply({ content: "En cours de refresh...", ephemeral: true });
+                    if(isBotRefreshing) {
+                        await commandInteraction.reply({ content: "Oula, tout doux mon grand, j'suis en plein refresh. Va te chercher un Pastis.", ephemeral: true });
+                        return;
+                    }
+                    await commandInteraction.reply({ content: "En cours de refresh...", ephemeral: true });
+                    isBotRefreshing = true;
                     if(interaction.options.getBoolean('audio')) {
-                        await refreshList(interaction, "sounds", audioBaseUrl, sounds.length);
+                        await refreshList(commandInteraction, "sounds", audioBaseUrl, sounds.length);
                     }
                     if(interaction.options.getBoolean('gifs')) {
-                        await refreshList(interaction, "gifs", gifsBaseUrl, gifs.length);
+                        await refreshList(commandInteraction, "gifs", gifsBaseUrl, gifs.length);
                     }
                     if(!interaction.options.getBoolean('gifs') && !interaction.options.getBoolean('audio')) {
-                        await interaction.editReply({ embeds: [sassyReply], files: [sassyFile], ephemeral: true });
+                        await commandInteraction.editReply({ embeds: [sassyReply], files: [sassyFile] });
                     }
+                    isBotRefreshing = false;
                     break;
 
                 case 'kaamelott-clear': 
