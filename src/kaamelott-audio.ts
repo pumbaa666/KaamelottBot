@@ -1,15 +1,17 @@
-// const path = require('path');
-// const fs = require('fs');
-// const superagent = require('superagent');
-// const utils = require('./utils');
-// const logger = require('../conf/logger');
-// const { audioBaseUrl } = require('../conf/config');
-// const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-import { logger } from "../conf/logger";
-// import { Interaction } from "discord.js";
-import type { Interaction } from "discord.js";
+import * as path from 'path';
+import * as fs from 'fs';
+import * as superagent from "superagent";
+
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import type { CommandInteraction, CommandInteractionOption, Guild, VoiceBasedChannel } from "discord.js";
 import type { AudioPlayer } from "@discordjs/voice";
-// const { Player } = require('discord.js');
+import { GuildMember } from "discord.js";
+
+import { logger } from "../conf/logger";
+import { audioBaseUrl } from "../conf/config";
+import type { Sound } from "./bot";
+
+import * as utils from './utils';
 
 const {
 	StreamType,
@@ -29,13 +31,13 @@ type Character = {
 }
 
 
-async function searchAndReplyAudio(interaction: Interaction, sounds: Sound[], player: AudioPlayer, cacheDirectory: string) {
+export async function searchAndReplyAudio(interaction: CommandInteraction, sounds: Sound[], player: AudioPlayer, cacheDirectory: string) {
     logger.debug("YOU RAAAAANG ???");
     await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
     
     // Get the options and subcommands (if any)
     let silent = false;
-    let options = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
+    let options: any[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
     logger.debug('options : ', options);
 
     let index = options.findIndex(opt => opt.name == "silencieux");
@@ -118,12 +120,13 @@ async function searchAndReplyAudio(interaction: Interaction, sounds: Sound[], pl
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function replyWithMediaAudio(interaction: typeof Interaction, player: AudioPlayer, sound: Sound, silent = false, cacheDirectory: string, warning = "", options: Option[] = null) {
+async function replyWithMediaAudio(interaction: CommandInteraction, player: AudioPlayer, sound: Sound, silent = false, cacheDirectory: string, warning = "", options: CommandInteractionOption[] = null) {
     if(isBotPlayingSound) {
         await interaction.editReply("Molo fiston, j'ai pas fini la dernière commande !");
         return;
     }
 
+    interaction.member = interaction.member as GuildMember;
     if (!interaction.member?.voice.channel) {
         await interaction.editReply("T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits)");
         return;
@@ -185,7 +188,7 @@ async function replyWithMediaAudio(interaction: typeof Interaction, player: Audi
     // https://discordjs.guide/interactions/buttons.html#building-and-sending-buttons
     // https://discord.js.org/#/docs/builders/main/class/ActionRowBuilder
     // https://discord.js.org/#/docs/builders/main/class/ButtonBuilder
-    const rowButtons = new ActionRowBuilder()
+    const rowButtons = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(new ButtonBuilder()
             .setCustomId('replayAudio_' + tmpFilePath)
             // .setLabel('Replay Audio')
@@ -209,7 +212,7 @@ async function replyWithMediaAudio(interaction: typeof Interaction, player: Audi
     await playAudio(interaction.member?.voice.channel, player, filepath);
 }
 
-async function connectToVoiceChannel(channel: typeof VoiceChannel) {
+async function connectToVoiceChannel(channel: VoiceBasedChannel) {
 	const connection = joinVoiceChannel({
 		channelId: channel.id,
 		guildId: channel.guild.id,
@@ -219,13 +222,12 @@ async function connectToVoiceChannel(channel: typeof VoiceChannel) {
 		await entersState(connection, VoiceConnectionStatus.Ready, 2_000);
 		return connection;
 	} catch (error) {
-        logger.error("Error connecting to voice channel : ", error);
 		connection.destroy();
         throw error;
 	}
 }
 
-async function playAudio(channel: typeof VoiceChannel, player: AudioPlayer, filepath: string) {
+export async function playAudio(channel: VoiceBasedChannel, player: AudioPlayer, filepath: string) {
     if(isBotPlayingSound) {
         return;
     }
@@ -272,7 +274,7 @@ async function playAudio(channel: typeof VoiceChannel, player: AudioPlayer, file
 	return entersState(player, AudioPlayerStatus.Playing, 5000);
 }
 
-function stopAudio(player: AudioPlayer)
+export function stopAudio(player: AudioPlayer)
 {
     logger.debug("Stopping current sound");
     isBotPlayingSound = false;
@@ -282,10 +284,4 @@ function stopAudio(player: AudioPlayer)
     catch(error) {
         logger.error("Error while trying to stop current sound : ", error);
     }
-}
-
-module.exports = {
-    searchAndReplyAudio,
-    playAudio,
-    stopAudio,
 }

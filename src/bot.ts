@@ -4,18 +4,21 @@
 
 // TODO Les erreurs ne sont pas loggée dans ./logs, mais visibles dans `journalctl -xe` (en tout cas quand le bot est démarré en tant que service)
 
-const path = require('path');
-const fs = require('fs');
-const superagent = require('superagent');
-const kaamelottAudio = require('./kaamelott-audio');
-const kaamelottGifs = require('./kaamelott-gifs');
+import * as path from 'path';
+import * as fs from 'fs';
+import * as superagent from "superagent";
+
+import { REST, Routes, Client } from "discord.js";
+import { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { Interaction, Role, GuildMember, VoiceChannel } from "discord.js";
+import { createAudioPlayer, AudioPlayer } from "@discordjs/voice";
+import type { CommandInteraction, ButtonInteraction } from "discord.js";
+
+import *  as kaamelottAudio from "./kaamelott-audio";
+import *  as kaamelottGifs from "./kaamelott-gifs";
+import { audioBaseUrl, gifsBaseUrl } from "../conf/config";
 const { client_id, token } = require('../conf/auth-prod.json');
-const { audioBaseUrl, gifsBaseUrl } = require('../conf/config');
-const { REST, Routes, Client } = require('discord.js');
-const { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
-const { Interaction, Role, Member, VoiceChannel } = require('discord.js');
-const {	createAudioPlayer, AudioPlayer } = require("@discordjs/voice");
-// const logger2 = require('../conf/logger');
+
 import { logger } from "../conf/logger";
 logger.level = 'debug';
 
@@ -31,44 +34,19 @@ let sounds: Sound[] = null;
 let gifs: Gif[] = null;
 
 type Sound = {
+export type Sound = {
     character: string;
     episode: string;
     file: string;
     title: string;
 };
 
-type Gif = {
+export type Gif = {
     quote: string, // title / text
     characters: string[];
     characters_speaking: string[];
     filename: string;
 };
-
-type User = {
-    id: string;
-    username: string;
-    discriminator: string;
-    avatar: string;
-    public_flags: number;
-    bot: boolean;
-};
-
-type Option = {
-    name: string;
-    value: string;
-};
-
-// type Member = { // TODO check la doc que c'est bien ça
-//     user: User;
-//     nick: string;
-//     roles: string[];
-//     joined_at: string;
-//     premium_since: string;
-//     deaf: boolean;
-//     mute: boolean;
-//     pending: boolean;
-//     permissions: string;
-// };
 
 // Entry point
 async function startBot() {
@@ -90,7 +68,7 @@ async function startBot() {
         return;
     }
 
-    const player: typeof AudioPlayer = createAudioPlayer();
+    const player: AudioPlayer = createAudioPlayer();
     if(player == null) {
         logger.error("Error creating audio player, aborting");
         return;
@@ -290,7 +268,17 @@ async function parseJson(url: string, type: string) { // TODO Type as an enum
 }
 
 // Refresh the Audio or Gifs list by parsing the appropriate json file from github
-async function refreshList(interaction: typeof Interaction, type: string, url: string, oldCount: number) {
+async function refreshList(interaction: CommandInteraction, type: string, url: string, oldCount: number) {
+    // let guildMember: GuildMember = null;
+    // if(interaction.member instanceof GuildMember) {
+    //     logger.debug("Member is a GuildMember");
+    //     guildMember = interaction.member as GuildMember;
+    // } else {
+    //     logger.error("Member is not a GuildMember");
+    //     return null;
+    // }
+    interaction.member = interaction.member as GuildMember;
+    
     // Check if the user is an admin
     if(!isAdmin(interaction.member)) {
         await interaction.editReply({ content: "You're not an admin !" });
@@ -313,7 +301,7 @@ async function refreshList(interaction: typeof Interaction, type: string, url: s
 }
 
 // Register the bot on Discord and start listening to events
-function startClient(player: typeof AudioPlayer) {
+function startClient(player: AudioPlayer) {
     const client = new Client({
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates],
     });
@@ -322,9 +310,11 @@ function startClient(player: typeof AudioPlayer) {
         logger.info("KaamelottBot is live ! C'est quoi que t'as pas compris ?");
     });
     
-    client.on("interactionCreate", async (interaction: typeof Interaction) => {
+    client.on("interactionCreate", async (interaction: Interaction) => {
         // The user sent a slash command
         if (interaction.isChatInputCommand()) {
+            const commandInteraction = interaction as CommandInteraction;
+            
             // const sassyFile = new File("./resources/eye-on-you.gif", "eye-on-you.gif");
             const filename = "eye-on-you.gif";
             const sassyFile = new AttachmentBuilder("./resources/"+filename);
@@ -333,12 +323,12 @@ function startClient(player: typeof AudioPlayer) {
                 .setTitle("Merci de m'appeler pour rien !! 😡")
                 .setDescription("Tu vois ce que tu me fais coder ???")
                 .setImage("attachment://"+filename)
-                .setFooter({ text: 'Je te crache au visage, tient ! Pteuh !' }, [sassyFile]);
+                .setFooter({ text: 'Je te crache au visage, tient ! Pteuh !' })
                 
-            switch(interaction.commandName) {
-                case 'ping': await interaction.reply('Pong!'); break;
-                case 'kaamelott-audio': await kaamelottAudio.searchAndReplyAudio(interaction, sounds, player, getCacheFilePath("", "sounds")); break;
-                case 'kaamelott-gifs': await kaamelottGifs.searchAndReplyGif(interaction, gifs, null, getCacheFilePath("", "gifs")); break;
+            switch(commandInteraction.commandName) {
+                case 'ping': await commandInteraction.reply('Pong!'); break;
+                case 'kaamelott-audio': await kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", "sounds")); break;
+                case 'kaamelott-gifs': await kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", "gifs")); break;
                 case 'kaamelott-refresh':
                     await interaction.reply({ content: "En cours de refresh...", ephemeral: true });
                     if(interaction.options.getBoolean('audio')) {
@@ -353,15 +343,16 @@ function startClient(player: typeof AudioPlayer) {
                     break;
 
                 case 'kaamelott-clear': 
+                    // Only one at a time, because we ask for confirmation
                     if(interaction.options.getBoolean('audio')) {
-                        await askToClearCache(interaction, "sounds");
+                        await askToClearCache(commandInteraction, "sounds");
                         break;
                     }
                     if(interaction.options.getBoolean('gifs')) {
-                        await askToClearCache(interaction, "gifs");
+                        await askToClearCache(commandInteraction, "gifs");
                         break;
                     }
-                    await interaction.reply({ embeds: [sassyReply], files: [sassyFile], ephemeral: true });
+                    await commandInteraction.editReply({ embeds: [sassyReply], files: [sassyFile] });
                     break;
             }
 
@@ -370,21 +361,23 @@ function startClient(player: typeof AudioPlayer) {
 
         // The user clicked on a button
         if (interaction.isButton()) {
-            if(interaction.customId == 'stopCurrentSound') {
+            const buttonInteraction = interaction as ButtonInteraction
+            buttonInteraction.member = buttonInteraction.member as GuildMember;
+            if(buttonInteraction.customId == 'stopCurrentSound') {
                 kaamelottAudio.stopAudio(player);
-                await interaction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
-            } else if(interaction.customId.startsWith('replayAudio_')) {
-                await interaction.reply({ content: 'Swing it baby !', ephemeral: true });
+                await buttonInteraction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
+            } else if(buttonInteraction.customId.startsWith('replayAudio_')) {
+                await buttonInteraction.reply({ content: 'Swing it baby !', ephemeral: true });
 
-                const tempFilePath = interaction.customId.substring('replayAudio_'.length);
+                const tempFilePath = buttonInteraction.customId.substring('replayAudio_'.length);
                 const filename = fs.readFileSync(tempFilePath, 'utf8'); // Use the content of the temp file as the filename
                 logger.debug("Replaying file " + filename);
-                await interaction.editReply({ content: 'Replaying file ' + filename });
-                await kaamelottAudio.playAudio(interaction.member?.voice.channel, player, getCacheFilePath(filename, "sounds"));
-                await interaction.editReply({ content: 'Done' });
-            } else if(interaction.customId == 'clearsoundsCache') {
+                await buttonInteraction.editReply({ content: 'Replaying file ' + filename });
+                await kaamelottAudio.playAudio(buttonInteraction.member?.voice.channel, player, getCacheFilePath(filename, "sounds"));
+                await buttonInteraction.editReply({ content: 'Done' });
+            } else if(buttonInteraction.customId == 'clearsoundsCache') {
                 clearCache(interaction, "sounds", ".mp3");
-            } else if(interaction.customId == 'cleargifsCache') {
+            } else if(buttonInteraction.customId == 'cleargifsCache') {
                 clearCache(interaction, "gifs", ".gif");
             }
             return;
@@ -403,7 +396,8 @@ function getCacheFilePath(filename: string, type: string) {
 
 // Show a warning and ask for a confirmation
 // The user can accept by clicking on the button
-async function askToClearCache(interaction: typeof Interaction, type: string) {    
+async function askToClearCache(interaction: CommandInteraction, type: string) {
+    interaction.member = interaction.member as GuildMember;
     if(!isAdmin(interaction.member)) {
         await interaction.reply({ content: "You're not an admin !", ephemeral: true });
         return;
@@ -413,7 +407,7 @@ async function askToClearCache(interaction: typeof Interaction, type: string) {
         .setColor(0x0099FF)
         .setTitle("This will delete all the " + type + " in cache. Are you sure ?");
 
-    const rowButtons = new ActionRowBuilder()
+    const rowButtons = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(new ButtonBuilder()
             .setCustomId("clear" + type + "Cache")
             .setLabel("Yes, I'm sure !")
@@ -425,9 +419,9 @@ async function askToClearCache(interaction: typeof Interaction, type: string) {
 }
 // Clear local cached files
 // Sounds and Gifs, according to the type
-async function clearCache(interaction: typeof Interaction, type: string, fileExt: string) {
+async function clearCache(interaction: ButtonInteraction, type: string, fileExt: string) {
     await interaction.reply({ content: "Essayons de nettoyer ce merdier", ephemeral: true });
-
+    interaction.member = interaction.member as GuildMember;
     if(!isAdmin(interaction.member)) {
         await interaction.editReply({ content: "You're not an admin !" });
         return;
@@ -455,7 +449,7 @@ async function clearCache(interaction: typeof Interaction, type: string, fileExt
     await interaction.editReply({ content: "Cache cleared. " + nbDeletedFiles + " files deleted, " + nbSkippedFiles + " files skipped." });
 }
 
-function isAdmin(member: typeof Member) {
+function isAdmin(member: GuildMember) {
     if(member == null || member.roles == null || member.roles.cache == null) {
         logger.warn("Roles are null ! Member : ", member);
         return false;

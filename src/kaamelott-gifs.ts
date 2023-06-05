@@ -1,18 +1,23 @@
-// const path = require('path');
-// const fs = require('fs');
-// const superagent = require('superagent');
-const utils = require('./utils');
-// const logger = require('../conf/logger');
-// const { gifsBaseUrl } = require('../conf/config');
-// const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+import * as path from 'path';
+import * as fs from 'fs';
+import * as superagent from "superagent";
+
+import { EmbedBuilder, AttachmentBuilder } from "discord.js";
+import type { CommandInteraction, CommandInteractionOption } from "discord.js";
+
 import { logger } from "../conf/logger";
 
-async function searchAndReplyGif(interaction: typeof Interaction, gifs: Gif[], player: AudioPlayer = null, cacheDirectory: string) {
+import { gifsBaseUrl } from "../conf/config";
+import type { Gif } from "./bot";
+
+import * as utils from './utils';
+
+export async function searchAndReplyGif(interaction: CommandInteraction, gifs: Gif[], cacheDirectory: string) {
     await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
     logger.debug("Allo?");
     
     // Get the options and subcommands (if any)
-    let options = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
+    let options: any[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
     logger.debug('options : ', options);
 
     if(options.length == 0) { // Pas d'option, on en file un au hasard
@@ -90,7 +95,7 @@ async function searchAndReplyGif(interaction: typeof Interaction, gifs: Gif[], p
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function replyWithMediaGif(interaction: typeof Interaction, gif: Gif, cacheDirectory: string, warning = "", options: Option[] = null) {
+async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cacheDirectory: string, warning = "", options: CommandInteractionOption[] = null) {
     if(gif == null || gif.filename == null) {
         logger.error("Gif is null or file is null, it should not happen. gif : ", gif);
         interaction.editReply({ content: "Erreur inattendue, je n'ai pas réussi à trouver le fichier"});
@@ -145,7 +150,3 @@ async function replyWithMediaGif(interaction: typeof Interaction, gif: Gif, cach
     await interaction.editReply({ embeds: [reply], files: [gifFile]});
     logger.debug("Embed sent to user");
 }
-
-module.exports = {
-    searchAndReplyGif,
-};
