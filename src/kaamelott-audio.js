@@ -258,33 +258,36 @@ function playAudio(interaction, player, filepath) {
                 case 0:
                     interaction.member = interaction.member;
                     channel = (_a = interaction.member) === null || _a === void 0 ? void 0 : _a.voice.channel;
-                    if (isBotPlayingSound) {
-                        return [2];
-                    }
-                    if (!(channel == null)) return [3, 2];
-                    return [4, interaction.editReply("🔇 T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits) ⚠️")];
+                    if (!isBotPlayingSound) return [3, 2];
+                    return [4, interaction.editReply("Molo fiston, j'ai pas fini la dernière commande !")];
                 case 1:
                     _b.sent();
                     return [2];
                 case 2:
+                    if (!(channel == null)) return [3, 4];
+                    return [4, interaction.editReply("🔇 T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits) ⚠️")];
+                case 3:
+                    _b.sent();
+                    return [2];
+                case 4:
                     isBotPlayingSound = true;
                     resource = createAudioResource(filepath, {
                         inputType: StreamType.Arbitrary,
                     });
                     voiceChannel = null;
-                    _b.label = 3;
-                case 3:
-                    _b.trys.push([3, 5, , 6]);
-                    return [4, connectToVoiceChannel(channel)];
-                case 4:
-                    voiceChannel = _b.sent();
-                    return [3, 6];
+                    _b.label = 5;
                 case 5:
+                    _b.trys.push([5, 7, , 8]);
+                    return [4, connectToVoiceChannel(channel)];
+                case 6:
+                    voiceChannel = _b.sent();
+                    return [3, 8];
+                case 7:
                     error_3 = _b.sent();
                     isBotPlayingSound = false;
                     logger_1.logger.warn("Error trying to connect to channel : ", error_3);
                     return [2];
-                case 6:
+                case 8:
                     logger_1.logger.debug("connected to voice channel : " + channel.name);
                     try {
                         voiceChannel.subscribe(player);

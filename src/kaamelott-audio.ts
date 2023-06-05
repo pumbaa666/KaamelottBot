@@ -226,6 +226,7 @@ export async function playAudio(interaction: CommandInteraction | ButtonInteract
     const channel: VoiceBasedChannel = interaction.member?.voice.channel;
     
     if(isBotPlayingSound) {
+        await interaction.editReply("Molo fiston, j'ai pas fini la dernière commande !");
         return;
     }
 
