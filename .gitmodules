@@ -1,0 +1,6 @@
+[submodule "kaamelott-soundboard"]
+	path = kaamelott-soundboard
+	url = https://github.com/2ec0b4/kaamelott-soundboard.git
+[submodule "kaamelott-gifboard"]
+	path = kaamelott-gifboard
+	url = https://github.com/kaamelott-gifboard/kaamelott-gifboard.git

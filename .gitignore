@@ -62,7 +62,7 @@ typings/
 .next
 #/sounds/*.mp3
 /sounds.bkp
-#/gifs/*.gif
+/gifs/*.gif
 /conf/auth-prod.json
 /logs/*.log
 #/src/*.js

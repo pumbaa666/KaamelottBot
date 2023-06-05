@@ -104,10 +104,9 @@ async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cach
 
     const filename = gif.filename;
     let fullUrl = gifsBaseUrl + "public/gifs/" + filename;
-    const filepath = path.join(cacheDirectory, filename);
-    // const filepath2 = getCacheFilePath(filename, "gifs");
 
     // Cache files
+    const filepath = path.join(cacheDirectory, filename);
     try {
         if(!fs.existsSync(filepath)) {
             logger.debug("Cached file does not exist, downloading it from " + fullUrl);
