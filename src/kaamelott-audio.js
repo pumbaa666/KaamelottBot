@@ -262,7 +262,7 @@ function playAudio(interaction, player, filepath) {
                         return [2];
                     }
                     if (!(channel == null)) return [3, 2];
-                    return [4, interaction.editReply("⚠️ T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits) ⚠️")];
+                    return [4, interaction.editReply("🔇 T'es pas dans un chan audio, gros ! (Ou alors t'as pas les droits) ⚠️")];
                 case 1:
                     _b.sent();
                     return [2];
