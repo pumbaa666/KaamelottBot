@@ -441,7 +441,7 @@ function startClient(player) {
                 case 20:
                     _c.sent();
                     return [3, 23];
-                case 21: return [4, commandInteraction.editReply({ embeds: [sassyReply], files: [sassyFile] })];
+                case 21: return [4, commandInteraction.reply({ embeds: [sassyReply], files: [sassyFile] })];
                 case 22:
                     _c.sent();
                     return [3, 23];

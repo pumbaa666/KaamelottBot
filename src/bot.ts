@@ -359,7 +359,7 @@ function startClient(player: AudioPlayer) {
                         await askToClearCache(commandInteraction, "gifs");
                         break;
                     }
-                    await commandInteraction.editReply({ embeds: [sassyReply], files: [sassyFile] });
+                    await commandInteraction.reply({ embeds: [sassyReply], files: [sassyFile] });
                     break;
             }
 

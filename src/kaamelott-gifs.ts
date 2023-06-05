@@ -15,7 +15,7 @@ import * as utils from './utils';
 export async function searchAndReplyGif(interaction: CommandInteraction, gifs: Gif[], cacheDirectory: string) {
     await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
     logger.debug("Allo?");
-    
+
     // Get the options and subcommands (if any)
     let options: any[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
     logger.debug('options : ', options);
