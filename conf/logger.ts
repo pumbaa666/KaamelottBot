@@ -8,7 +8,7 @@ const logFormat = winston.format.printf(function(info) {
     return `${now}-${info.level}: ${JSON.stringify(info.message, null, 4)}\n`;
 });
 
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
     transports: [
         new winston.transports.File({
             name: 'error-file',
@@ -53,6 +53,3 @@ const logger = winston.createLogger({
     ],
     exitOnError: false,
 });
-
-// module.exports = logger;
-export { logger };

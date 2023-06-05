@@ -8,7 +8,7 @@ var datePattern = "DD-MM-yyyy";
 var logFormat = winston.format.printf(function (info) {
     return "".concat(now, "-").concat(info.level, ": ").concat(JSON.stringify(info.message, null, 4), "\n");
 });
-var logger = winston.createLogger({
+exports.logger = winston.createLogger({
     transports: [
         new winston.transports.File({
             name: 'error-file',
@@ -48,4 +48,3 @@ var logger = winston.createLogger({
     ],
     exitOnError: false,
 });
-exports.logger = logger;
