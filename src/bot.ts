@@ -49,6 +49,11 @@ export type Gif = {
     filename: string;
 };
 
+enum MEDIA_TYPE {
+    sounds = "sounds",
+    gifs = "gifs"
+}
+
 // Entry point
 async function startBot() {
     const slashCommandsResult = await registerSlashCommands();
@@ -223,21 +228,21 @@ async function registerSlashCommands(): Promise<boolean> {
 }
 
 async function parseGifsJson(url: string) {
-    const result = await parseJson(url, "gifs");
+    const result = await parseJson(url, MEDIA_TYPE.gifs);
     if(result != null) {
         gifs = result;
     }
 }
 
 async function parseAudioJson(url: string) {
-    const result = await parseJson(url, "sounds");
+    const result = await parseJson(url, MEDIA_TYPE.sounds);
     if(result != null) {    
         sounds = result;
     }
 }
 
 // Parse a JSON file from a URL and return an array of objects (Sounds or Gifs)
-async function parseJson(url: string, type: string) { // TODO Type as an enum
+async function parseJson(url: string, type: MEDIA_TYPE) {
     const fullUrl = url + type + ".json";
     let response = null;
 
@@ -269,7 +274,7 @@ async function parseJson(url: string, type: string) { // TODO Type as an enum
 }
 
 // Refresh the Audio or Gifs list by parsing the appropriate json file from github
-async function refreshList(interaction: CommandInteraction, type: string, url: string, oldCount: number) {
+async function refreshList(interaction: CommandInteraction, type: MEDIA_TYPE, url: string, oldCount: number) {
     // let guildMember: GuildMember = null;
     // if(interaction.member instanceof GuildMember) {
     //     logger.debug("Member is a GuildMember");
@@ -328,8 +333,8 @@ function startClient(player: AudioPlayer) {
                 
             switch(commandInteraction.commandName) {
                 case 'ping': await commandInteraction.reply('Pong!'); break;
-                case 'kaamelott-audio': await kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", "sounds")); break;
-                case 'kaamelott-gifs': await kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", "gifs")); break;
+                case 'kaamelott-audio': await kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", MEDIA_TYPE.sounds)); break;
+                case 'kaamelott-gifs': await kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", MEDIA_TYPE.gifs)); break;
                 case 'kaamelott-refresh':
                     if(isBotRefreshing) {
                         await commandInteraction.reply({ content: "Oula, tout doux mon grand, j'suis en plein refresh. Va te chercher un Pastis.", ephemeral: true });
@@ -338,10 +343,10 @@ function startClient(player: AudioPlayer) {
                     await commandInteraction.reply({ content: "En cours de refresh...", ephemeral: true });
                     isBotRefreshing = true;
                     if(interaction.options.getBoolean('audio')) {
-                        await refreshList(commandInteraction, "sounds", audioBaseUrl, sounds.length);
+                        await refreshList(commandInteraction, MEDIA_TYPE.sounds, audioBaseUrl, sounds.length);
                     }
                     if(interaction.options.getBoolean('gifs')) {
-                        await refreshList(commandInteraction, "gifs", gifsBaseUrl, gifs.length);
+                        await refreshList(commandInteraction, MEDIA_TYPE.gifs, gifsBaseUrl, gifs.length);
                     }
                     if(!interaction.options.getBoolean('gifs') && !interaction.options.getBoolean('audio')) {
                         await commandInteraction.editReply({ embeds: [sassyReply], files: [sassyFile] });
@@ -352,11 +357,11 @@ function startClient(player: AudioPlayer) {
                 case 'kaamelott-clear': 
                     // Only one at a time, because we ask for confirmation
                     if(interaction.options.getBoolean('audio')) {
-                        await askToClearCache(commandInteraction, "sounds");
+                        await askToClearCache(commandInteraction, MEDIA_TYPE.sounds);
                         break;
                     }
                     if(interaction.options.getBoolean('gifs')) {
-                        await askToClearCache(commandInteraction, "gifs");
+                        await askToClearCache(commandInteraction, MEDIA_TYPE.gifs);
                         break;
                     }
                     await commandInteraction.reply({ embeds: [sassyReply], files: [sassyFile] });
@@ -380,12 +385,12 @@ function startClient(player: AudioPlayer) {
                 const filename = fs.readFileSync(tempFilePath, 'utf8'); // Use the content of the temp file as the filename
                 logger.debug("Replaying file " + filename);
                 await buttonInteraction.editReply({ content: 'Replaying file ' + filename });
-                await kaamelottAudio.playAudio(buttonInteraction.member?.voice.channel, player, getCacheFilePath(filename, "sounds"));
+                await kaamelottAudio.playAudio(buttonInteraction.member?.voice.channel, player, getCacheFilePath(filename, MEDIA_TYPE.sounds));
                 await buttonInteraction.editReply({ content: 'Done' });
             } else if(buttonInteraction.customId == 'clearsoundsCache') {
-                clearCache(interaction, "sounds", ".mp3");
+                clearCache(interaction, MEDIA_TYPE.sounds, ".mp3");
             } else if(buttonInteraction.customId == 'cleargifsCache') {
-                clearCache(interaction, "gifs", ".gif");
+                clearCache(interaction, MEDIA_TYPE.gifs, ".gif");
             }
             return;
         }
@@ -394,7 +399,7 @@ function startClient(player: AudioPlayer) {
     client.login(token);
 }
 
-function getCacheFilePath(filename: string, type: string) {
+function getCacheFilePath(filename: string, type: MEDIA_TYPE) {
     const currentFilePath = path.resolve(__dirname);
     const cacheDirectory = currentFilePath + "/../"+type+"/";
     const filepath = cacheDirectory + filename;
@@ -403,7 +408,7 @@ function getCacheFilePath(filename: string, type: string) {
 
 // Show a warning and ask for a confirmation
 // The user can accept by clicking on the button
-async function askToClearCache(interaction: CommandInteraction, type: string) {
+async function askToClearCache(interaction: CommandInteraction, type: MEDIA_TYPE) {
     interaction.member = interaction.member as GuildMember;
     if(!isAdmin(interaction.member)) {
         await interaction.reply({ content: "You're not an admin !", ephemeral: true });
@@ -426,7 +431,7 @@ async function askToClearCache(interaction: CommandInteraction, type: string) {
 }
 // Clear local cached files
 // Sounds and Gifs, according to the type
-async function clearCache(interaction: ButtonInteraction, type: string, fileExt: string) {
+async function clearCache(interaction: ButtonInteraction, type: MEDIA_TYPE, fileExt: string) {
     await interaction.reply({ content: "Essayons de nettoyer ce merdier", ephemeral: true });
     interaction.member = interaction.member as GuildMember;
     if(!isAdmin(interaction.member)) {

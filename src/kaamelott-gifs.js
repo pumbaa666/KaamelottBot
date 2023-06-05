@@ -177,7 +177,7 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
                         .setDescription(gif.quote)
                         .addFields({ name: 'Perso principal', value: gif.characters.join(", "), inline: true }, { name: 'Autres perso', value: gif.characters_speaking.join(", "), inline: true })
                         .setImage('attachment://' + filename)
-                        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' });
+                        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icons/icon-32x32.png' });
                     if (options != null) {
                         optionsInline = options.map(function (option) { return option.value; }).join(", ").toLowerCase() + " (in " + options.map(function (option) { return option.name; }).join(", ").toLowerCase() + ")";
                         reply.addFields({ name: 'Mot-clé', value: optionsInline, inline: false });

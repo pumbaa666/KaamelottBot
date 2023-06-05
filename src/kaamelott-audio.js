@@ -196,7 +196,7 @@ function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory,
                         .setAuthor({ name: 'by Pumbaa', iconURL: 'https://avatars.githubusercontent.com/u/34394718?v=4', url: 'https://github.com/pumbaa666' })
                         .setDescription(sound.title)
                         .addFields({ name: 'Episode', value: sound.episode, inline: true }, { name: 'Personnages', value: sound.character, inline: true })
-                        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' });
+                        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icons/icon-32x32.png' });
                     if (options != null) {
                         optionsInline = options.map(function (option) { return option.value; }).join(", ").toLowerCase() + " (in " + options.map(function (option) { return option.name; }).join(", ").toLowerCase() + ")";
                         reply.addFields({ name: 'Mot-clé', value: optionsInline, inline: false });

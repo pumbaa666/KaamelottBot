@@ -167,7 +167,7 @@ async function replyWithMediaAudio(interaction: CommandInteraction, player: Audi
         )
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         // .setImage('https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon.png')
-        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' }
+        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icons/icon-32x32.png' }
     );
     
     if(options != null) {

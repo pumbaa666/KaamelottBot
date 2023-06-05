@@ -58,6 +58,11 @@ var ADMINISTRATOR = 8;
 var sounds = null;
 var gifs = null;
 var isBotRefreshing = false;
+var MEDIA_TYPE;
+(function (MEDIA_TYPE) {
+    MEDIA_TYPE["sounds"] = "sounds";
+    MEDIA_TYPE["gifs"] = "gifs";
+})(MEDIA_TYPE || (MEDIA_TYPE = {}));
 function startBot() {
     return __awaiter(this, void 0, void 0, function () {
         var slashCommandsResult, player, tomorrow;
@@ -257,7 +262,7 @@ function parseGifsJson(url) {
         var result;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4, parseJson(url, "gifs")];
+                case 0: return [4, parseJson(url, MEDIA_TYPE.gifs)];
                 case 1:
                     result = _a.sent();
                     if (result != null) {
@@ -273,7 +278,7 @@ function parseAudioJson(url) {
         var result;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4, parseJson(url, "sounds")];
+                case 0: return [4, parseJson(url, MEDIA_TYPE.sounds)];
                 case 1:
                     result = _a.sent();
                     if (result != null) {
@@ -391,11 +396,11 @@ function startClient(player) {
                 case 2:
                     _c.sent();
                     return [3, 23];
-                case 3: return [4, kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", "sounds"))];
+                case 3: return [4, kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", MEDIA_TYPE.sounds))];
                 case 4:
                     _c.sent();
                     return [3, 23];
-                case 5: return [4, kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", "gifs"))];
+                case 5: return [4, kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", MEDIA_TYPE.gifs))];
                 case 6:
                     _c.sent();
                     return [3, 23];
@@ -410,13 +415,13 @@ function startClient(player) {
                     _c.sent();
                     isBotRefreshing = true;
                     if (!interaction.options.getBoolean('audio')) return [3, 12];
-                    return [4, refreshList(commandInteraction, "sounds", config_1.audioBaseUrl, sounds.length)];
+                    return [4, refreshList(commandInteraction, MEDIA_TYPE.sounds, config_1.audioBaseUrl, sounds.length)];
                 case 11:
                     _c.sent();
                     _c.label = 12;
                 case 12:
                     if (!interaction.options.getBoolean('gifs')) return [3, 14];
-                    return [4, refreshList(commandInteraction, "gifs", config_1.gifsBaseUrl, gifs.length)];
+                    return [4, refreshList(commandInteraction, MEDIA_TYPE.gifs, config_1.gifsBaseUrl, gifs.length)];
                 case 13:
                     _c.sent();
                     _c.label = 14;
@@ -431,13 +436,13 @@ function startClient(player) {
                     return [3, 23];
                 case 17:
                     if (!interaction.options.getBoolean('audio')) return [3, 19];
-                    return [4, askToClearCache(commandInteraction, "sounds")];
+                    return [4, askToClearCache(commandInteraction, MEDIA_TYPE.sounds)];
                 case 18:
                     _c.sent();
                     return [3, 23];
                 case 19:
                     if (!interaction.options.getBoolean('gifs')) return [3, 21];
-                    return [4, askToClearCache(commandInteraction, "gifs")];
+                    return [4, askToClearCache(commandInteraction, MEDIA_TYPE.gifs)];
                 case 20:
                     _c.sent();
                     return [3, 23];
@@ -467,7 +472,7 @@ function startClient(player) {
                     return [4, buttonInteraction.editReply({ content: 'Replaying file ' + filename })];
                 case 28:
                     _c.sent();
-                    return [4, kaamelottAudio.playAudio((_b = buttonInteraction.member) === null || _b === void 0 ? void 0 : _b.voice.channel, player, getCacheFilePath(filename, "sounds"))];
+                    return [4, kaamelottAudio.playAudio((_b = buttonInteraction.member) === null || _b === void 0 ? void 0 : _b.voice.channel, player, getCacheFilePath(filename, MEDIA_TYPE.sounds))];
                 case 29:
                     _c.sent();
                     return [4, buttonInteraction.editReply({ content: 'Done' })];
@@ -476,10 +481,10 @@ function startClient(player) {
                     return [3, 32];
                 case 31:
                     if (buttonInteraction.customId == 'clearsoundsCache') {
-                        clearCache(interaction, "sounds", ".mp3");
+                        clearCache(interaction, MEDIA_TYPE.sounds, ".mp3");
                     }
                     else if (buttonInteraction.customId == 'cleargifsCache') {
-                        clearCache(interaction, "gifs", ".gif");
+                        clearCache(interaction, MEDIA_TYPE.gifs, ".gif");
                     }
                     _c.label = 32;
                 case 32: return [2];
