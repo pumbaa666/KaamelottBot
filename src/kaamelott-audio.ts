@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as superagent from "superagent";
 
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Interaction, ButtonInteraction } from "discord.js";
-import type { CommandInteraction, CommandInteractionOption, Guild, VoiceBasedChannel } from "discord.js";
+import type { CommandInteraction, CommandInteractionOption, CommandInteractionOptionResolver, Guild, VoiceBasedChannel } from "discord.js";
 import type { AudioPlayer } from "@discordjs/voice";
 import { GuildMember } from "discord.js";
 
@@ -32,17 +32,16 @@ type Character = {
 
 
 export async function searchAndReplyAudio(interaction: CommandInteraction, sounds: Sound[], player: AudioPlayer, cacheDirectory: string) {
-    logger.debug("YOU RAAAAANG ???");
     await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
     
     // Get the options and subcommands (if any)
     let silent = false;
-    let options: any[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
-    logger.debug('options : ', options);
+    let options: CommandInteractionOption[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
+    logger.info('Searching audio with : ' + options.map(opt => opt.name + ":" + opt.value).join(", "));
 
     let index = options.findIndex(opt => opt.name == "silencieux");
     if(index != -1) {
-        silent = options[index].value;
+        silent = options[index].value as boolean;
         options.splice(index, 1);
     }
 
@@ -58,7 +57,7 @@ export async function searchAndReplyAudio(interaction: CommandInteraction, sound
     // If any options is "Tout", search anywhere and ignore other options
     const allIndex = options.findIndex(opt => opt.name == "tout");    
     if(allIndex != -1) {
-        const subValue = options[allIndex].value.toLowerCase();
+        const subValue = (options[allIndex].value as string).toLowerCase();
         if(options.length > 1) {
             warning = warning + "J'ai ignoré les autres options car tu as demandé Tout.\n";
             options = [options[allIndex]];
@@ -85,7 +84,7 @@ export async function searchAndReplyAudio(interaction: CommandInteraction, sound
             const optName: string = optionMapping[option.name];
             individualResults[optName] = [];
             sounds.forEach(sound => {
-                if(sound[optName].toLowerCase().includes(option.value.toLowerCase())) {
+                if(sound[optName].toLowerCase().includes((option.value as string).toLowerCase())) {
                     individualResults[optName].push(sound);
                 }
             });
@@ -222,8 +221,7 @@ async function connectToVoiceChannel(channel: VoiceBasedChannel) {
 }
 
 export async function playAudio(interaction: CommandInteraction | ButtonInteraction, player: AudioPlayer, filepath: string) {
-    interaction.member = interaction.member as GuildMember;
-    const channel: VoiceBasedChannel = interaction.member?.voice.channel;
+    const channel: VoiceBasedChannel = (interaction.member as GuildMember)?.voice.channel;
     
     if(isBotPlayingSound) {
         await interaction.editReply("Molo fiston, j'ai pas fini la dernière commande !");
@@ -255,6 +253,7 @@ export async function playAudio(interaction: CommandInteraction | ButtonInteract
     try {
         voiceChannel.subscribe(player);
         player.play(resource); // , {volume: "0.5"}
+        logger.info("Playing audio " + filepath)
         player.on("stateChange", state => {
             logger.debug("State changed to " + state.status);
             if(state.status == AudioPlayerStatus.Playing) { // Why Playing and not Idle ?
@@ -263,7 +262,7 @@ export async function playAudio(interaction: CommandInteraction | ButtonInteract
             }
         });
     } catch(error) {
-        logger.error("Error while playing audio at " + filepath + " : ", error);
+        logger.error("Error while playing audio from " + filepath + " : ", error);
         logger.error(" - Player : ", player);
         logger.error(" - VoiceChannel : ", voiceChannel);
         logger.error(" - Resource : ", resource);

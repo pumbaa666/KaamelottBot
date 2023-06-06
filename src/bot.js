@@ -332,7 +332,6 @@ function refreshList(interaction, type, url, oldCount) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    interaction.member = interaction.member;
                     if (!!isAdmin(interaction.member)) return [3, 2];
                     return [4, interaction.editReply({ content: "You're not an admin !" })];
                 case 1:
@@ -501,7 +500,6 @@ function askToClearCache(interaction, type) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    interaction.member = interaction.member;
                     if (!!isAdmin(interaction.member)) return [3, 2];
                     return [4, interaction.reply({ content: "You're not an admin !", ephemeral: true })];
                 case 1:
@@ -533,7 +531,6 @@ function clearCache(interaction, type, fileExt) {
                 case 0: return [4, interaction.reply({ content: "Essayons de nettoyer ce merdier", ephemeral: true })];
                 case 1:
                     _a.sent();
-                    interaction.member = interaction.member;
                     if (!!isAdmin(interaction.member)) return [3, 3];
                     return [4, interaction.editReply({ content: "You're not an admin !" })];
                 case 2:

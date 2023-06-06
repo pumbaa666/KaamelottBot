@@ -60,14 +60,12 @@ function searchAndReplyAudio(interaction, sounds, player, cacheDirectory) {
         var silent, options, index, results, warning, allIndex, subValue_1, optionMapping_1, individualResults_1, firstArray, remainingArrays, _i, _a, _b, key, value;
         return __generator(this, function (_c) {
             switch (_c.label) {
-                case 0:
-                    logger_1.logger.debug("YOU RAAAAANG ???");
-                    return [4, interaction.reply({ content: "Jamais de bougie dans une librairie !!!" })];
+                case 0: return [4, interaction.reply({ content: "Jamais de bougie dans une librairie !!!" })];
                 case 1:
                     _c.sent();
                     silent = false;
                     options = __spreadArray([], interaction.options.data, true);
-                    logger_1.logger.debug('options : ', options);
+                    logger_1.logger.info('Searching audio with : ' + options.map(function (opt) { return opt.name + ":" + opt.value; }).join(", "));
                     index = options.findIndex(function (opt) { return opt.name == "silencieux"; });
                     if (index != -1) {
                         silent = options[index].value;
@@ -256,7 +254,6 @@ function playAudio(interaction, player, filepath) {
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    interaction.member = interaction.member;
                     channel = (_a = interaction.member) === null || _a === void 0 ? void 0 : _a.voice.channel;
                     if (!isBotPlayingSound) return [3, 2];
                     return [4, interaction.editReply("Molo fiston, j'ai pas fini la dernière commande !")];
@@ -292,6 +289,7 @@ function playAudio(interaction, player, filepath) {
                     try {
                         voiceChannel.subscribe(player);
                         player.play(resource);
+                        logger_1.logger.info("Playing audio " + filepath);
                         player.on("stateChange", function (state) {
                             logger_1.logger.debug("State changed to " + state.status);
                             if (state.status == AudioPlayerStatus.Playing) {
@@ -301,7 +299,7 @@ function playAudio(interaction, player, filepath) {
                         });
                     }
                     catch (error) {
-                        logger_1.logger.error("Error while playing audio at " + filepath + " : ", error);
+                        logger_1.logger.error("Error while playing audio from " + filepath + " : ", error);
                         logger_1.logger.error(" - Player : ", player);
                         logger_1.logger.error(" - VoiceChannel : ", voiceChannel);
                         logger_1.logger.error(" - Resource : ", resource);

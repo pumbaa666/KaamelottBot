@@ -63,7 +63,7 @@ function searchAndReplyGif(interaction, gifs, cacheDirectory) {
                     _c.sent();
                     logger_1.logger.debug("Allo?");
                     options = __spreadArray([], interaction.options.data, true);
-                    logger_1.logger.debug('options : ', options);
+                    logger_1.logger.info('Searching gifs with : ' + options.map(function (opt) { return opt.name + ":" + opt.value; }).join(", "));
                     if (options.length == 0) {
                         replyWithMediaGif(interaction, gifs[utils.getRandomInt(gifs.length - 1)], cacheDirectory);
                         return [2];
@@ -152,7 +152,7 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
                 case 1:
                     _a.trys.push([1, 4, , 6]);
                     if (!!fs.existsSync(filepath)) return [3, 3];
-                    logger_1.logger.debug("Cached file does not exist, downloading it from " + fullUrl);
+                    logger_1.logger.info("Cached file does not exist, downloading it from " + fullUrl);
                     return [4, superagent.get(fullUrl)];
                 case 2:
                     response = _a.sent();
@@ -185,6 +185,7 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
                     if (warning != "") {
                         reply.addFields({ name: 'Warning', value: warning, inline: false });
                     }
+                    logger_1.logger.info("Sending gif at " + filepath);
                     return [4, interaction.editReply({ embeds: [reply], files: [gifFile] })];
                 case 7:
                     _a.sent();

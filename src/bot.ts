@@ -3,6 +3,8 @@
 // Radio Bot : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 
 // TODO Les erreurs ne sont pas loggée dans ./logs, mais visibles dans `journalctl -xe` (en tout cas quand le bot est démarré en tant que service)
+// TODO intégrer les pull request en attente : https://github.com/2ec0b4/kaamelott-soundboard/pulls
+// TODO proposer les ajouts de crystal en PR
 
 import * as path from 'path';
 import * as fs from 'fs';
@@ -275,18 +277,8 @@ async function parseJson(url: string, type: MEDIA_TYPE) {
 
 // Refresh the Audio or Gifs list by parsing the appropriate json file from github
 async function refreshList(interaction: CommandInteraction, type: MEDIA_TYPE, url: string, oldCount: number) {
-    // let guildMember: GuildMember = null;
-    // if(interaction.member instanceof GuildMember) {
-    //     logger.debug("Member is a GuildMember");
-    //     guildMember = interaction.member as GuildMember;
-    // } else {
-    //     logger.error("Member is not a GuildMember");
-    //     return null;
-    // }
-    interaction.member = interaction.member as GuildMember;
-    
     // Check if the user is an admin
-    if(!isAdmin(interaction.member)) {
+    if(!isAdmin(interaction.member as GuildMember)) {
         await interaction.editReply({ content: "You're not an admin !" });
         return null;
     }
@@ -399,7 +391,7 @@ function startClient(player: AudioPlayer) {
 
 function getCacheFilePath(filename: string, type: MEDIA_TYPE) {
     const currentFilePath = path.resolve(__dirname);
-    const cacheDirectory = currentFilePath + "/../"+type+"/";
+    const cacheDirectory = currentFilePath + "/../../"+type+"/"; // One level up more since the js code is in bin/, now
     const filepath = cacheDirectory + filename;
     return filepath;
 }
@@ -407,8 +399,7 @@ function getCacheFilePath(filename: string, type: MEDIA_TYPE) {
 // Show a warning and ask for a confirmation
 // The user can accept by clicking on the button
 async function askToClearCache(interaction: CommandInteraction, type: MEDIA_TYPE) {
-    interaction.member = interaction.member as GuildMember;
-    if(!isAdmin(interaction.member)) {
+    if(!isAdmin(interaction.member as GuildMember)) {
         await interaction.reply({ content: "You're not an admin !", ephemeral: true });
         return;
     }
@@ -431,8 +422,7 @@ async function askToClearCache(interaction: CommandInteraction, type: MEDIA_TYPE
 // Sounds and Gifs, according to the type
 async function clearCache(interaction: ButtonInteraction, type: MEDIA_TYPE, fileExt: string) {
     await interaction.reply({ content: "Essayons de nettoyer ce merdier", ephemeral: true });
-    interaction.member = interaction.member as GuildMember;
-    if(!isAdmin(interaction.member)) {
+    if(!isAdmin(interaction.member as GuildMember)) {
         await interaction.editReply({ content: "You're not an admin !" });
         return;
     }

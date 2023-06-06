@@ -1,5 +1,5 @@
-export const audioBaseUrl = "https://raw.githubusercontent.com/crystalskunk/KaamelottBot/master/sounds/";
-export const gifsBaseUrl = "https://raw.githubusercontent.com/kaamelott-gifboard/kaamelott-gifboard/main/";
+export const audioBaseUrl: string = "https://raw.githubusercontent.com/crystalskunk/KaamelottBot/master/sounds/";
+export const gifsBaseUrl: string = "https://raw.githubusercontent.com/kaamelott-gifboard/kaamelott-gifboard/main/";
 
 // TODO implement fallback
 // An array of base urls to fallback in case the first one fails
