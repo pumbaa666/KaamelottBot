@@ -13,12 +13,12 @@ import type { Gif } from "./bot";
 import * as utils from './utils';
 
 export async function searchAndReplyGif(interaction: CommandInteraction, gifs: Gif[], cacheDirectory: string) {
-    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
+    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"}); // TODO ajouter un gif animé qui tourne pour faire patienter le user.  Pareil dans Audio
     logger.debug("Allo?");
 
     // Get the options and subcommands (if any)
-    let options: any[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
-    logger.debug('options : ', options);
+    let options: CommandInteractionOption[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
+    logger.info('Searching gifs with : ' + options.map(opt => opt.name + ":" + opt.value).join(", "));
 
     if(options.length == 0) { // Pas d'option, on en file un au hasard
         replyWithMediaGif(interaction, gifs[utils.getRandomInt(gifs.length - 1)], cacheDirectory);
@@ -32,7 +32,7 @@ export async function searchAndReplyGif(interaction: CommandInteraction, gifs: G
     // If any options is "Tout", search anywhere and ignore other options
     const allIndex = options.findIndex(opt => opt.name == "tout");    
     if(allIndex != -1) {
-        const subValue = options[allIndex].value.toLowerCase();
+        const subValue = (options[allIndex].value as string).toLowerCase();
         if(options.length > 1) {
             warning = warning + "J'ai ignoré les autres options car tu as demandé Tout.\n";
             options = [options[allIndex]];
@@ -49,18 +49,19 @@ export async function searchAndReplyGif(interaction: CommandInteraction, gifs: G
     }
         
     else { // Search for each options with corresponding value
-        const optionMapping = {
+        const optionMapping: any = {
             "perso": "characters", // On ne recheche pas dans characters_speaking car ils sont inclus dans characters
             "texte": "quote"
         };
         
-        const individualResults = [];
+        
+        const individualResults: any = [];
         options.forEach(option => {
             const optName = optionMapping[option.name];
             individualResults[optName] = [];
             gifs.forEach(gif => {
                 const optionsInline = Array.isArray(gif[optName]) ? gif[optName].join(",") : gif[optName];
-                if(optionsInline.toLowerCase().includes(option.value.toLowerCase())) {
+                if(optionsInline.toLowerCase().includes((option.value as string).toLowerCase())) {
                     individualResults[optName].push(gif);
                 }
             });
@@ -109,14 +110,14 @@ async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cach
     const filepath = path.join(cacheDirectory, filename);
     try {
         if(!fs.existsSync(filepath)) {
-            logger.debug("Cached file does not exist, downloading it from " + fullUrl);
+            logger.info("Cached file does not exist, downloading it from " + fullUrl);
             const response = await superagent.get(fullUrl);
             fs.writeFileSync(filepath, response.body);
         }
     } catch(error) {
         // TODO fallback here
         logger.warn("Error while trying to cache file at " + filepath + " : ", error);
-        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl + " : " + error);
+        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl);
         return;
     }
 
@@ -146,6 +147,7 @@ async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cach
         reply.addFields({ name: 'Warning', value: warning, inline: false});
     }
 
+    logger.info("Sending gif " + filepath)
     await interaction.editReply({ embeds: [reply], files: [gifFile]});
     logger.debug("Embed sent to user");
 }
