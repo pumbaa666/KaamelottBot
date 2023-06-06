@@ -490,7 +490,7 @@ function startClient(player) {
 }
 function getCacheFilePath(filename, type) {
     var currentFilePath = path.resolve(__dirname);
-    var cacheDirectory = currentFilePath + "/../" + type + "/";
+    var cacheDirectory = currentFilePath + "/../../" + type + "/";
     var filepath = cacheDirectory + filename;
     return filepath;
 }

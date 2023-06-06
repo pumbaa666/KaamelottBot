@@ -60,7 +60,8 @@ cd KaamelottBot
 npm install -g typescript
 npm install --save-dev @discordjs/uws@^10.149.0 # Or npm install -g npm-install-peers
 npm install
-cp conf/auth-dev.json conf/auth-prod.json
+tsc # to compile TypeScript to JavaScript in the bin folder
+cp conf/auth-dev.json bin/conf/auth-prod.json
 ```
 (See bellow for `auth-prod.json` content)
 
@@ -120,7 +121,7 @@ Note the `application id`, it's your `client_id` (same as in tab `OAuth2/General
 
 **Bot**
 
-Generate the `token` and save it to `KaamelottBot/conf/auth-prod.json` (duplicate it from `auth-dev.json`)
+Generate the `token` and save it to `KaamelottBot/bin/conf/auth-prod.json` (duplicate it from `auth-dev.json`)
 ```
 {
     "client_id": "YOUR-CLIENT-ID",

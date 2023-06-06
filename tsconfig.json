@@ -10,7 +10,8 @@
 
         // "isolatedModules": true, // TODO try. Tried : fait des erreurs à la compilation à cause de certains modules
         // "lib": ["es6"],
+        "outDir": "bin",
     },
     "include": ["src/**/*.ts", "conf/**/*.ts"],
-    "exclude": ["node_modules", "**/*.spec.ts"] // Don't work, add to use skipLibCheck
+    "exclude": ["node_modules", "**/*.spec.ts"] // Don't work, i had to use skipLibCheck
 }

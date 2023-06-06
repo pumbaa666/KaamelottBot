@@ -162,7 +162,7 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
                 case 4:
                     error_1 = _a.sent();
                     logger_1.logger.warn("Error while trying to cache file at " + filepath + " : ", error_1);
-                    return [4, interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl + " : " + error_1)];
+                    return [4, interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl)];
                 case 5:
                     _a.sent();
                     return [2];
@@ -185,7 +185,7 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
                     if (warning != "") {
                         reply.addFields({ name: 'Warning', value: warning, inline: false });
                     }
-                    logger_1.logger.info("Sending gif at " + filepath);
+                    logger_1.logger.info("Sending gif " + filepath);
                     return [4, interaction.editReply({ embeds: [reply], files: [gifFile] })];
                 case 7:
                     _a.sent();
