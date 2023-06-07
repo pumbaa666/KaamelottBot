@@ -115,7 +115,7 @@ async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cach
         }
     } catch(error) {
         // TODO fallback here
-        logger.warn("Error while trying to cache file at " + filepath + " : ", error);
+        logger.warn("Error while trying to cache image file at " + filepath + " : ", error);
         await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl);
         return;
     }

@@ -52,7 +52,20 @@ Server Requirements
 - node 19, nvm
 - ffmpeg
 
-Installing the Server
+
+Installing the Server with Docker
+---
+
+```
+git clone https://github.com/pumbaa666/KaamelottBot.git
+#copier/modifier auth-prod.json
+docker build . -t pumbaa666/kaamelott_bot
+docker run --name kaamelott_bot -d pumbaa666/kaamelott_bot
+# TODO monter gifs et sounds en volume
+```
+
+
+Installing the Server _Alamano©_
 ---
 **KaamelottBot**
 

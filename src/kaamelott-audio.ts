@@ -145,7 +145,10 @@ async function replyWithMediaAudio(interaction: CommandInteraction, player: Audi
             fs.writeFileSync(filepath, response.body);
         }
     } catch(error) {
-        logger.warn("Error while trying to cache file at " + filepath + " : ", error);
+        // TODO fallback here
+        logger.warn("Error while trying to cache audio file at " + filepath + " : ", error);
+        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl);
+        return;
     }
 
     // https://discordjs.guide/popular-topics/embeds.html#using-the-embed-constructor
