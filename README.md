@@ -5,6 +5,7 @@ What is it
 ---
 My friends and I are huge fans of the french TV Series [**Kaamelott**](https://fr.wikipedia.org/wiki/Kaamelott) and we can't stop ourselves to quote infamous inside joke about/from the show.
 So when I stumbled upon [a repository](https://github.com/2ec0b4/kaamelott-soundboard) listing a bunch of quotes in small audio format I couldn't resist the urge to use it.
+A huge Thanks to **2ec0b** and his dedication to build a well organized soundbox.
 
 **KaamelottBot** is a silly bot who plays quotes in your current Discord audio-channel when you invoke it in any text-channel with `/kaamelott-audio (+option)`
 It also can play animated gifs with `/kaamelott-gifs (+option)` 

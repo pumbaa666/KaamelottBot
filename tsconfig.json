@@ -5,11 +5,9 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "skipLibCheck": true, // https://github.com/microsoft/TypeScript/issues/46634
-        // "outFile": "runnable/kaamelot-bot-full.js",
-        // "sourceMap": true,
+        "sourceMap": true, // For debugging purpose. Helps the debugger to navigate between the source code and the generated code.
 
         // "isolatedModules": true, // TODO try. Tried : fait des erreurs à la compilation à cause de certains modules
-        // "lib": ["es6"],
         "outDir": "bin",
     },
     "include": ["src/**/*.ts", "conf/**/*.ts"],

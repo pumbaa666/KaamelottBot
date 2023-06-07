@@ -1,3 +1,5 @@
+// https://discordjs.guide/voice/audio-player.html#taking-action-within-the-error-handler
+
 import * as path from 'path';
 import * as fs from 'fs';
 import * as superagent from "superagent";
@@ -32,7 +34,7 @@ type Character = {
 
 
 export async function searchAndReplyAudio(interaction: CommandInteraction, sounds: Sound[], player: AudioPlayer, cacheDirectory: string) {
-    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
+    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"}); // TODO ajouter un gif animé qui tourne pour faire patienter le user.
     
     // Get the options and subcommands (if any)
     let silent = false;

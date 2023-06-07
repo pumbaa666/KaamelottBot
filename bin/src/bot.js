@@ -572,3 +572,4 @@ function isAdmin(member) {
     return member.roles.cache.some(function (role) { return role.name === 'Admin'; });
 }
 startBot();
+//# sourceMappingURL=bot.js.map

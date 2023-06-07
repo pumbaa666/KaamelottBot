@@ -2,6 +2,18 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"type": "typescript", // It will run a `tsc -p` command in a new terminal, beware of the default node version in this environment.
+			"tsconfig": "tsconfig.json",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "tsc: build - tsconfig.json"
+		},
+		{
 			"type": "typescript",
 			"tsconfig": "tsconfig.json",
 			"option": "watch",

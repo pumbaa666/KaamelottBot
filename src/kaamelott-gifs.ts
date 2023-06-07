@@ -13,7 +13,7 @@ import type { Gif } from "./bot";
 import * as utils from './utils';
 
 export async function searchAndReplyGif(interaction: CommandInteraction, gifs: Gif[], cacheDirectory: string) {
-    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"}); // TODO ajouter un gif animé qui tourne pour faire patienter le user.  Pareil dans Audio
+    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"}); // TODO ajouter un gif animé qui tourne pour faire patienter le user.
     logger.debug("Allo?");
 
     // Get the options and subcommands (if any)

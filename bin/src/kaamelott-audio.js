@@ -321,3 +321,4 @@ function stopAudio(player) {
     }
 }
 exports.stopAudio = stopAudio;
+//# sourceMappingURL=kaamelott-audio.js.map

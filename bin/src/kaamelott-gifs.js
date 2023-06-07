@@ -195,3 +195,4 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
         });
     });
 }
+//# sourceMappingURL=kaamelott-gifs.js.map

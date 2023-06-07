@@ -48,3 +48,4 @@ exports.logger = winston.createLogger({
     ],
     exitOnError: false,
 });
+//# sourceMappingURL=logger.js.map

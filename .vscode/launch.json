@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Start and debug",
+            "program": "${workspaceFolder}/bin/src/bot.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Process",
+            "processId": "${command:PickProcess}", // Run the bot manually (`npm run start`) and then run the debugger (F5) and select the process
+        }
+    ]
+}

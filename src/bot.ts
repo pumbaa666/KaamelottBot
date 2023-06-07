@@ -2,7 +2,7 @@
 // Basic Bot (mon usage) https://github.com/discordjs/voice-examples/blob/main/basic/src/adapter.ts
 // Radio Bot : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 
-// TODO Les erreurs ne sont pas loggée dans ./logs, mais visibles dans `journalctl -xe` (en tout cas quand le bot est démarré en tant que service)
+// TODO `systemctl status kaamelott_bot` montre les logs depuis trop longtemps, il faut les remettre à 0
 // TODO intégrer les pull request en attente : https://github.com/2ec0b4/kaamelott-soundboard/pulls
 // TODO proposer les ajouts de crystal en PR
 
