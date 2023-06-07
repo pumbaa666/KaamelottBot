@@ -1,21 +1,27 @@
-const path = require('path');
-const fs = require('fs');
-const superagent = require('superagent');
-const utils = require('./utils');
-const logger = require('../conf/logger');
-const { gifsBaseUrl } = require('../conf/config');
-const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+import * as path from 'path';
+import * as fs from 'fs';
+import * as superagent from "superagent";
 
-async function searchAndReply(interaction, gifs, player = null, cacheDirectory) {
-    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"});
+import { EmbedBuilder, AttachmentBuilder } from "discord.js";
+import type { CommandInteraction, CommandInteractionOption } from "discord.js";
+
+import { logger } from "../conf/logger";
+
+import { gifsBaseUrl } from "../conf/config";
+import type { Gif } from "./bot";
+
+import * as utils from './utils';
+
+export async function searchAndReplyGif(interaction: CommandInteraction, gifs: Gif[], cacheDirectory: string) {
+    await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"}); // TODO ajouter un gif animé qui tourne pour faire patienter le user.
     logger.debug("Allo?");
-    
+
     // Get the options and subcommands (if any)
-    let options = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
-    logger.debug('options : ', options);
+    let options: CommandInteractionOption[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
+    logger.info('Searching gifs with : ' + options.map(opt => opt.name + ":" + opt.value).join(", "));
 
     if(options.length == 0) { // Pas d'option, on en file un au hasard
-        replyWithMedia(interaction, gifs[utils.getRandomInt(gifs.length - 1)], cacheDirectory);
+        replyWithMediaGif(interaction, gifs[utils.getRandomInt(gifs.length - 1)], cacheDirectory);
         return;
     }
 
@@ -26,7 +32,7 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
     // If any options is "Tout", search anywhere and ignore other options
     const allIndex = options.findIndex(opt => opt.name == "tout");    
     if(allIndex != -1) {
-        const subValue = options[allIndex].value.toLowerCase();
+        const subValue = (options[allIndex].value as string).toLowerCase();
         if(options.length > 1) {
             warning = warning + "J'ai ignoré les autres options car tu as demandé Tout.\n";
             options = [options[allIndex]];
@@ -43,18 +49,18 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
     }
         
     else { // Search for each options with corresponding value
-        const optionMapping = {
+        let optionMapping: { [key: string]: string } = {
             "perso": "characters", // On ne recheche pas dans characters_speaking car ils sont inclus dans characters
             "texte": "quote"
         };
         
-        const individualResults = [];
+        let individualResults: { [key: string]: Gif[] } = {};
         options.forEach(option => {
             const optName = optionMapping[option.name];
             individualResults[optName] = [];
             gifs.forEach(gif => {
                 const optionsInline = Array.isArray(gif[optName]) ? gif[optName].join(",") : gif[optName];
-                if(optionsInline.toLowerCase().includes(option.value.toLowerCase())) {
+                if(optionsInline.toLowerCase().includes((option.value as string).toLowerCase())) {
                     individualResults[optName].push(gif);
                 }
             });
@@ -75,7 +81,7 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
 
     if(results.length == 0) { // On n'a rien trouvé, on envoie un truc au pif parmis le tout
         warning = warning + "Aucun résultat, j'en file un au hasard\n";
-        replyWithMedia(interaction, gifs[utils.getRandomInt(gifs.length)], cacheDirectory, warning, options);
+        replyWithMediaGif(interaction, gifs[utils.getRandomInt(gifs.length)], cacheDirectory, warning, options);
         return;
     }
     
@@ -83,13 +89,13 @@ async function searchAndReply(interaction, gifs, player = null, cacheDirectory) 
         warning = warning + "1 résultat parmi " + results.length + "\n";
     }
     
-    replyWithMedia(interaction, results[utils.getRandomInt(results.length)], cacheDirectory, warning, options);
+    replyWithMediaGif(interaction, results[utils.getRandomInt(results.length)], cacheDirectory, warning, options);
 
     return;
 }
 
 // https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
-async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", options = null) {
+async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cacheDirectory: string, warning = "", options: CommandInteractionOption[] = null) {
     if(gif == null || gif.filename == null) {
         logger.error("Gif is null or file is null, it should not happen. gif : ", gif);
         interaction.editReply({ content: "Erreur inattendue, je n'ai pas réussi à trouver le fichier"});
@@ -98,20 +104,19 @@ async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", op
 
     const filename = gif.filename;
     let fullUrl = gifsBaseUrl + "public/gifs/" + filename;
-    const filepath = path.join(cacheDirectory, filename);
-    // const filepath2 = getCacheFilePath(filename, "gifs");
 
     // Cache files
+    const filepath = path.join(cacheDirectory, filename);
     try {
         if(!fs.existsSync(filepath)) {
-            logger.debug("Cached file does not exist, downloading it from " + fullUrl);
+            logger.info("Cached file does not exist, downloading it from " + fullUrl);
             const response = await superagent.get(fullUrl);
             fs.writeFileSync(filepath, response.body);
         }
     } catch(error) {
+        // TODO fallback here
         logger.warn("Error while trying to cache file at " + filepath + " : ", error);
-        // TODO try to send the url instead of the file
-        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl + " : " + error); // To delete when the retry with fullUrl is implemented
+        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl);
         return;
     }
 
@@ -126,12 +131,12 @@ async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", op
         .setAuthor({ name: 'by Pumbaa', iconURL: 'https://avatars.githubusercontent.com/u/34394718?v=4', url: 'https://github.com/pumbaa666' })
         .setDescription(gif.quote)
         .addFields(
-            { name: 'Perso principal', value: gif.characters.join(", "), inline: true },
+            { name: 'Perso principal', value: gif.characters.join(", "), inline: true }, // TODO inclure l'image du perso depuis le dossier `characters-icons`
             { name: 'Autres perso', value: gif.characters_speaking.join(", "), inline: true },
         )
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         .setImage('attachment://' + filename)
-        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon-32x32.png' });
+        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icons/icon-32x32.png' });
     
     if(options != null) {
         const optionsInline = options.map(option => option.value).join(", ").toLowerCase() + " (in " + options.map(option => option.name).join(", ").toLowerCase() + ")"; // On concatène les options
@@ -141,10 +146,7 @@ async function replyWithMedia(interaction, gif, cacheDirectory, warning = "", op
         reply.addFields({ name: 'Warning', value: warning, inline: false});
     }
 
+    logger.info("Sending gif " + filepath)
     await interaction.editReply({ embeds: [reply], files: [gifFile]});
     logger.debug("Embed sent to user");
 }
-
-module.exports = {
-    searchAndReply,
-};

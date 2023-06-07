@@ -5,6 +5,7 @@ What is it
 ---
 My friends and I are huge fans of the french TV Series [**Kaamelott**](https://fr.wikipedia.org/wiki/Kaamelott) and we can't stop ourselves to quote infamous inside joke about/from the show.
 So when I stumbled upon [a repository](https://github.com/2ec0b4/kaamelott-soundboard) listing a bunch of quotes in small audio format I couldn't resist the urge to use it.
+A huge Thanks to **2ec0b** and his dedication to build a well organized soundbox.
 
 **KaamelottBot** is a silly bot who plays quotes in your current Discord voice-channel when you invoke it in any text-channel with `/kaamelott-audio (+option)`
 It also can play animated gifs with `/kaamelott-gifs (+option)` 
@@ -59,9 +60,11 @@ You will find the source here : https://github.com/pumbaa666/KaamelottBot.git
 ```
 git clone https://github.com/pumbaa666/KaamelottBot.git
 cd KaamelottBot
+npm install -g typescript
 npm install --save-dev @discordjs/uws@^10.149.0 # Or npm install -g npm-install-peers
 npm install
-cp conf/auth-dev.json conf/auth-prod.json
+tsc # to compile TypeScript to JavaScript in the bin folder
+cp conf/auth-dev.json bin/conf/auth-prod.json
 ```
 (See bellow for `auth-prod.json` content)
 
@@ -124,7 +127,7 @@ Note the `application id`, it's your `client_id` (same as in tab `OAuth2/General
 
 **Bot**
 
-Generate the `token` and save it to `KaamelottBot/conf/auth-prod.json` (duplicate it from `auth-dev.json`)
+Generate the `token` and save it to `KaamelottBot/bin/conf/auth-prod.json` (duplicate it from `auth-dev.json`)
 ```
 {
     "client_id": "YOUR-CLIENT-ID",

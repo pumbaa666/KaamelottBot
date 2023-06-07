@@ -2,19 +2,26 @@
 // Basic Bot (mon usage) https://github.com/discordjs/voice-examples/blob/main/basic/src/adapter.ts
 // Radio Bot : https://github.com/discordjs/voice-examples/blob/main/radio-bot/src/bot.ts
 
-// TODO passer de js en ts
+// TODO `systemctl status kaamelott_bot` montre les logs depuis trop longtemps, il faut les remettre à 0
+// TODO intégrer les pull request en attente : https://github.com/2ec0b4/kaamelott-soundboard/pulls
+// TODO proposer les ajouts de crystal en PR
 
-const path = require('path');
-const fs = require('fs');
-const superagent = require('superagent');
-const kaamelottAudio = require('./kaamelott-audio');
-const kaamelottGifs = require('./kaamelott-gifs');
+import * as path from 'path';
+import * as fs from 'fs';
+import * as superagent from "superagent";
+
+import { REST, Routes, Client } from "discord.js";
+import { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { Interaction, Role, GuildMember, VoiceChannel } from "discord.js";
+import { createAudioPlayer, AudioPlayer } from "@discordjs/voice";
+import type { CommandInteraction, ButtonInteraction } from "discord.js";
+
+import *  as kaamelottAudio from "./kaamelott-audio";
+import *  as kaamelottGifs from "./kaamelott-gifs";
+import { audioBaseUrl, gifsBaseUrl } from "../conf/config";
 const { client_id, token } = require('../conf/auth-prod.json');
-const { audioBaseUrl, gifsBaseUrl } = require('../conf/config');
-const { REST, Routes, Client } = require('discord.js');
-const { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const {	createAudioPlayer } = require("@discordjs/voice");
-const logger = require('../conf/logger');
+
+import { logger } from "../conf/logger";
 logger.level = 'debug';
 
 const { GatewayIntentBits } = require("discord-api-types/v10");
@@ -25,8 +32,29 @@ const STRING = 3; // https://discord.com/developers/docs/interactions/applicatio
 const BOOLEAN = 5;
 const ADMINISTRATOR = 8;
 
-let sounds = null;
-let gifs = null;
+let sounds: Sound[] = null;
+let gifs: Gif[] = null;
+
+let isBotRefreshing = false;
+
+export type Sound = {
+    character: string;
+    episode: string;
+    file: string;
+    title: string;
+};
+
+export type Gif = {
+    quote: string, // title / text
+    characters: string[];
+    characters_speaking: string[];
+    filename: string;
+};
+
+enum MEDIA_TYPE {
+    sounds = "sounds",
+    gifs = "gifs"
+}
 
 // Entry point
 async function startBot() {
@@ -48,7 +76,7 @@ async function startBot() {
         return;
     }
 
-    const player = createAudioPlayer();
+    const player: AudioPlayer = createAudioPlayer();
     if(player == null) {
         logger.error("Error creating audio player, aborting");
         return;
@@ -75,7 +103,7 @@ async function startBot() {
 // Define all the commands of the bot
 // Note : kick the bot from the Discord channel before you update the commands
 // and then re-invite it
-async function registerSlashCommands() {
+async function registerSlashCommands(): Promise<boolean> {
     const commands = [
         {
             name: 'ping',
@@ -192,6 +220,7 @@ async function registerSlashCommands() {
         logger.debug("Started refreshing application (/) commands : " + (commands.map(command => command.name)));
         await rest.put(Routes.applicationCommands(client_id), { body: commands });
         logger.info("Successfully reloaded application (/) commands.");
+
         return true;
     } catch (error) {
         logger.error("Error while refreshing application (/) commands : ", error);
@@ -200,22 +229,22 @@ async function registerSlashCommands() {
     return false;
 }
 
-async function parseGifsJson(url) {
-    const result = await parseJson(url, "gifs");
+async function parseGifsJson(url: string) {
+    const result = await parseJson(url, MEDIA_TYPE.gifs);
     if(result != null) {
         gifs = result;
     }
 }
 
-async function parseAudioJson(url) {
-    const result = await parseJson(url, "sounds");
+async function parseAudioJson(url: string) {
+    const result = await parseJson(url, MEDIA_TYPE.sounds);
     if(result != null) {    
         sounds = result;
     }
 }
 
 // Parse a JSON file from a URL and return an array of objects (Sounds or Gifs)
-async function parseJson(url, type) {
+async function parseJson(url: string, type: MEDIA_TYPE) {
     const fullUrl = url + type + ".json";
     let response = null;
 
@@ -247,9 +276,9 @@ async function parseJson(url, type) {
 }
 
 // Refresh the Audio or Gifs list by parsing the appropriate json file from github
-async function refreshList(interaction, type, url, oldCount) {
+async function refreshList(interaction: CommandInteraction, type: MEDIA_TYPE, url: string, oldCount: number) {
     // Check if the user is an admin
-    if(!isAdmin(interaction.member)) {
+    if(!isAdmin(interaction.member as GuildMember)) {
         await interaction.editReply({ content: "You're not an admin !" });
         return null;
     }
@@ -270,7 +299,7 @@ async function refreshList(interaction, type, url, oldCount) {
 }
 
 // Register the bot on Discord and start listening to events
-function startClient(player) {
+function startClient(player: AudioPlayer) {
     const client = new Client({
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates],
     });
@@ -279,9 +308,11 @@ function startClient(player) {
         logger.info("KaamelottBot is live ! C'est quoi que t'as pas compris ?");
     });
     
-    client.on("interactionCreate", async (interaction) => {
+    client.on("interactionCreate", async (interaction: Interaction) => {
         // The user sent a slash command
         if (interaction.isChatInputCommand()) {
+            const commandInteraction = interaction as CommandInteraction;
+            
             // const sassyFile = new File("./resources/eye-on-you.gif", "eye-on-you.gif");
             const filename = "eye-on-you.gif";
             const sassyFile = new AttachmentBuilder("./resources/"+filename);
@@ -290,35 +321,42 @@ function startClient(player) {
                 .setTitle("Merci de m'appeler pour rien !! 😡")
                 .setDescription("Tu vois ce que tu me fais coder ???")
                 .setImage("attachment://"+filename)
-                .setFooter({ text: 'Je te crache au visage, tient ! Pteuh !' }, [sassyFile]);
+                .setFooter({ text: 'Je te crache au visage, tient ! Pteuh !' })
                 
-            switch(interaction.commandName) {
-                case 'ping': await interaction.reply('Pong!'); break;
-                case 'kaamelott-audio': await kaamelottAudio.searchAndReply(interaction, sounds, player, getCacheFilePath("", "sounds")); break;
-                case 'kaamelott-gifs': await kaamelottGifs.searchAndReply(interaction, gifs, null, getCacheFilePath("", "gifs")); break;
+            switch(commandInteraction.commandName) {
+                case 'ping': await commandInteraction.reply('Pong!'); break;
+                case 'kaamelott-audio': await kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", MEDIA_TYPE.sounds)); break;
+                case 'kaamelott-gifs': await kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", MEDIA_TYPE.gifs)); break;
                 case 'kaamelott-refresh':
-                    await interaction.reply({ content: "En cours de refresh...", ephemeral: true });
+                    if(isBotRefreshing) {
+                        await commandInteraction.reply({ content: "Oula, tout doux mon grand, j'suis en plein refresh. Va te chercher un Pastis.", ephemeral: true });
+                        return;
+                    }
+                    await commandInteraction.reply({ content: "En cours de refresh...", ephemeral: true });
+                    isBotRefreshing = true;
                     if(interaction.options.getBoolean('audio')) {
-                        await refreshList(interaction, "sounds", audioBaseUrl, sounds.length);
+                        await refreshList(commandInteraction, MEDIA_TYPE.sounds, audioBaseUrl, sounds.length);
                     }
                     if(interaction.options.getBoolean('gifs')) {
-                        await refreshList(interaction, "gifs", gifsBaseUrl, gifs.length);
+                        await refreshList(commandInteraction, MEDIA_TYPE.gifs, gifsBaseUrl, gifs.length);
                     }
                     if(!interaction.options.getBoolean('gifs') && !interaction.options.getBoolean('audio')) {
-                        await interaction.editReply({ embeds: [sassyReply], files: [sassyFile], ephemeral: true });
+                        await commandInteraction.editReply({ embeds: [sassyReply], files: [sassyFile] });
                     }
+                    isBotRefreshing = false;
                     break;
 
                 case 'kaamelott-clear': 
+                    // Only one at a time, because we ask for confirmation
                     if(interaction.options.getBoolean('audio')) {
-                        await askToClearCache(interaction, "sounds");
+                        await askToClearCache(commandInteraction, MEDIA_TYPE.sounds);
                         break;
                     }
                     if(interaction.options.getBoolean('gifs')) {
-                        await askToClearCache(interaction, "gifs");
+                        await askToClearCache(commandInteraction, MEDIA_TYPE.gifs);
                         break;
                     }
-                    await interaction.reply({ embeds: [sassyReply], files: [sassyFile], ephemeral: true });
+                    await commandInteraction.reply({ embeds: [sassyReply], files: [sassyFile] });
                     break;
             }
 
@@ -327,22 +365,22 @@ function startClient(player) {
 
         // The user clicked on a button
         if (interaction.isButton()) {
-            if(interaction.customId == 'stopCurrentSound') {
+            const buttonInteraction = interaction as ButtonInteraction
+            if(buttonInteraction.customId == 'stopCurrentSound') {
                 kaamelottAudio.stopAudio(player);
-                await interaction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
-            } else if(interaction.customId.startsWith('replayAudio_')) {
-                await interaction.reply({ content: 'Swing it baby !', ephemeral: true });
+                await buttonInteraction.reply({ content: 'Zuuuuuuuut !', ephemeral: true });
+            } else if(buttonInteraction.customId.startsWith('replayAudio_')) {
+                await buttonInteraction.reply({ content: 'Swing it baby !', ephemeral: true });
 
-                const tempFilePath = interaction.customId.substring('replayAudio_'.length);
+                const tempFilePath = buttonInteraction.customId.substring('replayAudio_'.length);
                 const filename = fs.readFileSync(tempFilePath, 'utf8'); // Use the content of the temp file as the filename
                 logger.debug("Replaying file " + filename);
-                await interaction.editReply({ content: 'Replaying file ' + filename });
-                await kaamelottAudio.playAudio(interaction.member?.voice.channel, player, getCacheFilePath(filename, "sounds"));
-                await interaction.editReply({ content: 'Done' });
-            } else if(interaction.customId == 'clearsoundsCache') {
-                clearCache(interaction, "sounds", ".mp3");
-            } else if(interaction.customId == 'cleargifsCache') {
-                clearCache(interaction, "gifs", ".gif");
+                await buttonInteraction.editReply({ content: 'Replaying file ' + filename });
+                await kaamelottAudio.playAudio(buttonInteraction, player, getCacheFilePath(filename, MEDIA_TYPE.sounds));
+            } else if(buttonInteraction.customId == 'clearsoundsCache') {
+                clearCache(interaction, MEDIA_TYPE.sounds, ".mp3");
+            } else if(buttonInteraction.customId == 'cleargifsCache') {
+                clearCache(interaction, MEDIA_TYPE.gifs, ".gif");
             }
             return;
         }
@@ -351,17 +389,17 @@ function startClient(player) {
     client.login(token);
 }
 
-function getCacheFilePath(filename, type) {
+function getCacheFilePath(filename: string, type: MEDIA_TYPE) {
     const currentFilePath = path.resolve(__dirname);
-    const cacheDirectory = currentFilePath + "/../"+type+"/";
+    const cacheDirectory = currentFilePath + "/../../"+type+"/"; // One level up more since the js code is in bin/, now
     const filepath = cacheDirectory + filename;
     return filepath;
 }
 
 // Show a warning and ask for a confirmation
 // The user can accept by clicking on the button
-async function askToClearCache(interaction, type) {    
-    if(!isAdmin(interaction.member)) {
+async function askToClearCache(interaction: CommandInteraction, type: MEDIA_TYPE) {
+    if(!isAdmin(interaction.member as GuildMember)) {
         await interaction.reply({ content: "You're not an admin !", ephemeral: true });
         return;
     }
@@ -370,7 +408,7 @@ async function askToClearCache(interaction, type) {
         .setColor(0x0099FF)
         .setTitle("This will delete all the " + type + " in cache. Are you sure ?");
 
-    const rowButtons = new ActionRowBuilder()
+    const rowButtons = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(new ButtonBuilder()
             .setCustomId("clear" + type + "Cache")
             .setLabel("Yes, I'm sure !")
@@ -382,10 +420,9 @@ async function askToClearCache(interaction, type) {
 }
 // Clear local cached files
 // Sounds and Gifs, according to the type
-async function clearCache(interaction, type, fileExt) {
+async function clearCache(interaction: ButtonInteraction, type: MEDIA_TYPE, fileExt: string) {
     await interaction.reply({ content: "Essayons de nettoyer ce merdier", ephemeral: true });
-
-    if(!isAdmin(interaction.member)) {
+    if(!isAdmin(interaction.member as GuildMember)) {
         await interaction.editReply({ content: "You're not an admin !" });
         return;
     }
@@ -412,11 +449,12 @@ async function clearCache(interaction, type, fileExt) {
     await interaction.editReply({ content: "Cache cleared. " + nbDeletedFiles + " files deleted, " + nbSkippedFiles + " files skipped." });
 }
 
-function isAdmin(member) {
+function isAdmin(member: GuildMember) {
     if(member == null || member.roles == null || member.roles.cache == null) {
         logger.warn("Roles are null ! Member : ", member);
         return false;
     }
+
     return member.roles.cache.some(role => role.name === 'Admin');
 }
 

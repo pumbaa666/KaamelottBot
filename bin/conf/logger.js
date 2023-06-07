@@ -1,14 +1,14 @@
-// https://stackoverflow.com/questions/46658040/winston-is-not-writing-logs-to-files
-const winston = require('winston');
-
-const env = process.env.NODE_ENV;
-const now = new Date().toISOString();
-const datePattern = "DD-MM-yyyy";
-const logFormat = winston.format.printf(function(info) {
-    return `${now}-${info.level}: ${JSON.stringify(info.message, null, 4)}\n`;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.logger = void 0;
+var winston = require('winston');
+var env = process.env.NODE_ENV;
+var now = new Date().toISOString();
+var datePattern = "yyyy-MM-DD";
+var logFormat = winston.format.printf(function (info) {
+    return "".concat(now, "-").concat(info.level, ": ").concat(JSON.stringify(info.message, null, 4), "\n");
 });
-
-const logger = winston.createLogger({
+exports.logger = winston.createLogger({
     transports: [
         new winston.transports.File({
             name: 'error-file',
@@ -16,7 +16,6 @@ const logger = winston.createLogger({
             level: 'error',
             json: false,
         }),
-
         new (require('winston-daily-rotate-file'))({
             filename: 'logs/kaamelott-bot.log',
             level: env === 'development' ? 'debug' : 'info',
@@ -25,7 +24,6 @@ const logger = winston.createLogger({
             prepend: true,
             format: logFormat,
         }),
-
         new (require('winston-daily-rotate-file'))({
             filename: 'logs/kaamelott-bot.json',
             level: env === 'development' ? 'debug' : 'info',
@@ -34,7 +32,6 @@ const logger = winston.createLogger({
             prepend: true,
             json: true,
         }),
-
         new (require('winston-daily-rotate-file'))({
             filename: 'logs/kaamelott-bot.pretty',
             level: env === 'development' ? 'debug' : 'info',
@@ -43,8 +40,6 @@ const logger = winston.createLogger({
             prepend: true,
             format: winston.format.combine(winston.format.colorize(), logFormat),
         }),
-
-        // https://stackoverflow.com/questions/17963406/winston-doesnt-pretty-print-to-console
         new (winston.transports.Console)({
             name: "info-console",
             level: "debug",
@@ -52,6 +47,5 @@ const logger = winston.createLogger({
         })
     ],
     exitOnError: false,
-  });
-
-module.exports = logger;
+});
+//# sourceMappingURL=logger.js.map

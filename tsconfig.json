@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": false, // TODO true ?
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "skipLibCheck": true, // https://github.com/microsoft/TypeScript/issues/46634
+        "sourceMap": true, // For debugging purpose. Helps the debugger to navigate between the source code and the generated code.
+
+        // "isolatedModules": true, // TODO try. Tried : fait des erreurs à la compilation à cause de certains modules
+        "outDir": "bin",
+    },
+    "include": ["src/**/*.ts", "conf/**/*.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"] // Don't work, i had to use skipLibCheck
+}
