@@ -49,13 +49,12 @@ export async function searchAndReplyGif(interaction: CommandInteraction, gifs: G
     }
         
     else { // Search for each options with corresponding value
-        const optionMapping: any = {
+        let optionMapping: { [key: string]: string } = {
             "perso": "characters", // On ne recheche pas dans characters_speaking car ils sont inclus dans characters
             "texte": "quote"
         };
         
-        
-        const individualResults: any = [];
+        let individualResults: { [key: string]: Gif[] } = {};
         options.forEach(option => {
             const optName = optionMapping[option.name];
             individualResults[optName] = [];

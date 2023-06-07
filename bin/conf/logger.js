@@ -4,7 +4,7 @@ exports.logger = void 0;
 var winston = require('winston');
 var env = process.env.NODE_ENV;
 var now = new Date().toISOString();
-var datePattern = "DD-MM-yyyy";
+var datePattern = "yyyy-MM-DD";
 var logFormat = winston.format.printf(function (info) {
     return "".concat(now, "-").concat(info.level, ": ").concat(JSON.stringify(info.message, null, 4), "\n");
 });

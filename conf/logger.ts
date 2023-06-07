@@ -3,7 +3,7 @@ const winston = require('winston');
 
 const env = process.env.NODE_ENV;
 const now = new Date().toISOString();
-const datePattern = "DD-MM-yyyy";
+const datePattern = "yyyy-MM-DD";
 const logFormat = winston.format.printf(function(info) {
     return `${now}-${info.level}: ${JSON.stringify(info.message, null, 4)}\n`;
 });

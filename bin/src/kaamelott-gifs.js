@@ -92,7 +92,7 @@ function searchAndReplyGif(interaction, gifs, cacheDirectory) {
                             "perso": "characters",
                             "texte": "quote"
                         };
-                        individualResults_1 = [];
+                        individualResults_1 = {};
                         options.forEach(function (option) {
                             var optName = optionMapping_1[option.name];
                             individualResults_1[optName] = [];
