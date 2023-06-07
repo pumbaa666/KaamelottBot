@@ -161,7 +161,7 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
                 case 3: return [3, 6];
                 case 4:
                     error_1 = _a.sent();
-                    logger_1.logger.warn("Error while trying to cache file at " + filepath + " : ", error_1);
+                    logger_1.logger.warn("Error while trying to cache image file at " + filepath + " : ", error_1);
                     return [4, interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl)];
                 case 5:
                     _a.sent();

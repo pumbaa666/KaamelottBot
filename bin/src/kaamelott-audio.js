@@ -164,7 +164,7 @@ function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory,
                     filepath = path.join(cacheDirectory, filename);
                     _a.label = 5;
                 case 5:
-                    _a.trys.push([5, 8, , 9]);
+                    _a.trys.push([5, 8, , 10]);
                     if (!!fs.existsSync(filepath)) return [3, 7];
                     logger_1.logger.debug("Cached file does not exist, downloading it from " + fullUrl);
                     return [4, superagent.get(fullUrl)];
@@ -172,12 +172,15 @@ function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory,
                     response = _a.sent();
                     fs.writeFileSync(filepath, response.body);
                     _a.label = 7;
-                case 7: return [3, 9];
+                case 7: return [3, 10];
                 case 8:
                     error_1 = _a.sent();
-                    logger_1.logger.warn("Error while trying to cache file at " + filepath + " : ", error_1);
-                    return [3, 9];
+                    logger_1.logger.warn("Error while trying to cache audio file at " + filepath + " : ", error_1);
+                    return [4, interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl)];
                 case 9:
+                    _a.sent();
+                    return [2];
+                case 10:
                     logger_1.logger.debug("Sending embed to user. Warning : " + warning + ", options : ", options);
                     reply = new discord_js_1.EmbedBuilder()
                         .setColor(0x0099FF)
@@ -206,14 +209,14 @@ function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory,
                         .setStyle(discord_js_1.ButtonStyle.Secondary)
                         .setEmoji('🔇'));
                     return [4, interaction.editReply({ embeds: [reply], components: [rowButtons] })];
-                case 10:
+                case 11:
                     _a.sent();
                     if (silent) {
                         logger_1.logger.debug("Silent mode, not playing audio");
                         return [2];
                     }
                     return [4, playAudio(interaction, player, filepath)];
-                case 11:
+                case 12:
                     _a.sent();
                     return [2];
             }

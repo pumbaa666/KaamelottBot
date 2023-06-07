@@ -16,7 +16,7 @@
 	"scripts": {
 		"compile": "tsc -p tsconfig.json",
 		"start": "node ./bin/src/bot.js", "ts": "npm run compile && npm run start",
-		"docker-build": "docker build . -t pumbaa666/kaamelott_bot", "db": "npm run docker-build",
+		"docker-build": "npm run compile && docker build . -t pumbaa666/kaamelott_bot", "db": "npm run docker-build",
 		"docker-run": "docker run --name kaamelott_bot -d pumbaa666/kaamelott_bot", "drun": "npm run docker-run", "dr": "npm run drun",
 		"docker-exec": "docker exec -ti kaamelott_bot /bin/bash", "dexec": "npm run docker-exec", "de": "npm run dexec",
 		"docker-rm": "docker stop kaamelott_bot && docker rm kaamelott_bot", "drm": "npm run docker-rm",
