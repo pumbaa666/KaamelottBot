@@ -57,12 +57,12 @@ Installing the Server with Docker
 ---
 
 ```
-git clone https://github.com/pumbaa666/KaamelottBot.git
-#copier/modifier auth-prod.json
-docker build . -t pumbaa666/kaamelott_bot
-docker run --name kaamelott_bot -d pumbaa666/kaamelott_bot
-# TODO monter gifs et sounds en volume
+npm run docker-up
+# or the native command :
+# docker-compose up --detach --build
 ```
+
+Your local `gifs` and `sounds` folder will be shared with the container, if you want some initial cache.
 
 
 Installing the Server _Alamano©_
@@ -122,9 +122,9 @@ pwd # Note the absolute path of the KaamelotBot directory
 sudo cp KaamelottBot/resources/kaamelott_bot.service /etc/systemd/system/kaamelott_bot.service
 sudo vi /etc/systemd/system/kaamelott_bot.service
     # Put the values in ExecStart. Example :
-    # ExecStart=/home/USER/.nvm/versions/node/v19.7.0/bin/node /home/USER/programmation/node/KaamelottBot/src/bot.js
+    # ExecStart=/home/USER/.nvm/versions/node/v19.7.0/bin/node /home/USER/programmation/node/KaamelottBot/bin/src/bot.js
 
-sudo systemctl daemon-reload # Not mandatory on most case. But doesn't hurt.
+sudo systemctl daemon-reload # Required if you modified the .service file, not if you just created it.
 sudo systemctl start kaamelott_bot.service
 ```
 

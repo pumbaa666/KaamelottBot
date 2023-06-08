@@ -1,0 +1,8 @@
+version: '3.7'
+
+services:
+  kaamelott_bot:
+    image: pumbaa666/kaamelott_bot
+    volumes:
+     - ./sounds:/kaamelott_bot/sounds
+     - ./gifs:/kaamelott_bot/gifs

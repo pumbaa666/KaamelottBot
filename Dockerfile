@@ -1,23 +1,39 @@
-FROM    node:20-bullseye-slim
+FROM    node:20-bullseye-slim AS buildLayer
 
-RUN     mkdir /kaamelott_bot
-WORKDIR /kaamelott_bot
-
+# FFMPEG is required (by Discord API ?) to play gifs
 RUN     apt-get update && \
         apt-get install --no-install-recommends -y \
         ffmpeg
 
-COPY    package*.json /kaamelott_bot/
+FROM    bitnami/minideb:latest AS finalLayer
+COPY    --from=buildLayer /usr/bin/ffmpeg /usr/bin/ffmpeg
+COPY    --from=buildLayer /usr/local/bin/ /usr/local/bin/
+COPY    --from=buildLayer /usr/local/lib/ /usr/local/lib/
+COPY    --from=buildLayer /opt/yarn* /opt/
+COPY    --from=buildLayer /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
+
+ARG     APP_ROOT=/kaamelott_bot
+RUN     mkdir -p $APP_ROOT/
+WORKDIR $APP_ROOT/
+
+# /!\ BEFORE YOUR FIRST BUILD /!\
+# Don't forget to put your Discord API credentials in conf/auth-prod.json !
+COPY    bin     $APP_ROOT/bin
+COPY    conf    $APP_ROOT/conf
+COPY    resources $APP_ROOT/resources
+COPY    gifs/gifs.json $APP_ROOT/gifs/gifs.json
+COPY    sounds/sounds.json $APP_ROOT/sounds/sounds.json
+# # If you to include the sounds and gifs, uncomment the following lines. Beware, it will increase the image size !
+# COPY    gifs $APP_ROOT/gifs
+# COPY    sounds $APP_ROOT/sounds
+COPY    package*.json $APP_ROOT/
+
+ENV     KAAMELOTT_BOT_VERSION=1.2.0
+ENV     PATH="$PATH:/usr/bin/ffmpeg/:/usr/local/bin/node/:/usr/local/bin/npm/"
+
 RUN     npm install
 
-# don't forget to put your Discord API credentials in conf/auth-prod.json !
-COPY    bin     /kaamelott_bot/bin
-COPY    conf    /kaamelott_bot/conf
-COPY    resources /kaamelott_bot/resources
-# COPY    resources/kaamelott_bot.service /etc/systemd/system/kaamelott_bot.service
-COPY    gifs/gifs.json /kaamelott_bot/gifs/gifs.json
-COPY    sounds/sounds.json /kaamelott_bot/sounds/sounds.json
+CMD     [ "node", "bin/src/bot.js" ]
 
-# EXPOSE  1974
-
-CMD     [ "node", "/kaamelott_bot/bin/src/bot.js" ]
+# For debugging purpose. Comment CMD above and uncomment the following lines
+# ENTRYPOINT ["/bin/bash"]
