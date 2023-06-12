@@ -323,7 +323,7 @@ function startClient(player: AudioPlayer) {
             const author: GuildMember = interaction.member as GuildMember;
             const authorName: string = author.displayName;
     
-            const filename = "arthur-allez-crever.gif";
+            const filename = "allez-crever.gif";
             const sassyFile = new AttachmentBuilder("./resources/gifs/"+filename);
             sassyFile.setName(filename);
             const sassyReply = new EmbedBuilder()

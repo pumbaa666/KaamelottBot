@@ -381,7 +381,7 @@ function startClient(player) {
                     commandInteraction = interaction;
                     author = interaction.member;
                     authorName = author.displayName;
-                    filename = "arthur-allez-crever.gif";
+                    filename = "allez-crever.gif";
                     sassyFile = new discord_js_2.AttachmentBuilder("./resources/gifs/" + filename);
                     sassyFile.setName(filename);
                     sassyReply = new discord_js_2.EmbedBuilder()

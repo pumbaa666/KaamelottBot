@@ -288,6 +288,7 @@ and then : `sudo systemctl start kaamelott_bot.service`
 ---
 
 - 2023.x.y - Versionning (2.3.0)
+- - add a Bot version. As a npm command (for devs) and as a discord command.
 
 - 2023.06.12 - Dockerization (2.2.0)
 Create a Docker version to run the app as a container instead of as a service.
@@ -317,5 +318,4 @@ Here is the list of futur improvements. If this is empty it means the bot is per
 - add a "please wait" (animated gif) when searching a media. Clean the response when showing the result (animated gif and message "Bougie")
 - add a Public option to kaamelott-audio and kaamelott-gifs. Set to false it only show the response to the user.
 - log the connection of the bot to API
-- add a Bot version. As a npm command (for devs) and as a discord command.
 - add a command to get the top-20 of most-used words, by characters
