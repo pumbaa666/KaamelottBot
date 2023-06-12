@@ -214,6 +214,12 @@ async function registerSlashCommands(): Promise<boolean> {
                 }
             ]
         },
+        {
+            name: 'kaamelott-version',
+            description: 'Show the bot version',
+            default_member_permissions: GUILD_TEXT,
+            type: CHAT_INPUT
+        },
     ];
 
     const rest = new REST({ version: '10' }).setToken(token);
@@ -360,6 +366,20 @@ function startClient(player: AudioPlayer) {
                         break;
                     }
                     await commandInteraction.reply({ embeds: [sassyReply], files: [sassyFile] });
+                    break;
+                
+                case 'kaamelott-version':
+                    const versionReply = new EmbedBuilder()
+                        // Get version from conf/auth-prod.json
+                        const version = require('../conf/auth-prod.json').botVersion;
+                        
+                        const reply = new EmbedBuilder()
+                            .setColor(0x0099FF)
+                            .setTitle("Version")
+                            .setAuthor({ name: 'by Pumbaa', iconURL: 'https://avatars.githubusercontent.com/u/34394718?v=4', url: 'https://github.com/pumbaa666' })
+                            .setDescription(version)
+                            .setFooter({ text: "Vous avez une idée du temps qu'il me faut pour tracer une lettre avec ces PUTAINS DE PLUMES ?!" });
+                    await commandInteraction.reply({ embeds: [reply] });
                     break;
             }
 

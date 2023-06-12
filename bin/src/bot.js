@@ -237,6 +237,12 @@ function registerSlashCommands() {
                                 }
                             ]
                         },
+                        {
+                            name: 'kaamelott-version',
+                            description: 'Show the bot version',
+                            default_member_permissions: GUILD_TEXT,
+                            type: CHAT_INPUT
+                        },
                     ];
                     rest = new discord_js_1.REST({ version: '10' }).setToken(token);
                     _a.label = 1;
@@ -434,58 +440,71 @@ function startClient(player) {
                     _b.label = 16;
                 case 16:
                     isBotRefreshing = false;
-                    return [3, 23];
+                    return [3, 25];
                 case 17:
                     if (!interaction.options.getBoolean('audio')) return [3, 19];
                     return [4, askToClearCache(commandInteraction, MEDIA_TYPE.sounds)];
                 case 18:
                     _b.sent();
-                    return [3, 23];
+                    return [3, 25];
                 case 19:
                     if (!interaction.options.getBoolean('gifs')) return [3, 21];
                     return [4, askToClearCache(commandInteraction, MEDIA_TYPE.gifs)];
                 case 20:
                     _b.sent();
-                    return [3, 23];
+                    return [3, 25];
                 case 21: return [4, commandInteraction.reply({ embeds: [sassyReply], files: [sassyFile] })];
                 case 22:
                     _b.sent();
-                    return [3, 23];
-                case 23: return [2];
+                    return [3, 25];
+                case 23:
+                    versionReply = new discord_js_2.EmbedBuilder();
+                    version = require('../conf/auth-prod.json').botVersion;
+                    reply = new discord_js_2.EmbedBuilder()
+                        .setColor(0x0099FF)
+                        .setTitle("Version")
+                        .setAuthor({ name: 'by Pumbaa', iconURL: 'https://avatars.githubusercontent.com/u/34394718?v=4', url: 'https://github.com/pumbaa666' })
+                        .setDescription(version)
+                        .setFooter({ text: "Vous avez une idée du temps qu'il me faut pour tracer une lettre avec ces PUTAINS DE PLUMES ?!" });
+                    return [4, commandInteraction.reply({ embeds: [reply] })];
                 case 24:
-                    if (!interaction.isButton()) return [3, 32];
+                    _b.sent();
+                    return [3, 25];
+                case 25: return [2];
+                case 26:
+                    if (!interaction.isButton()) return [3, 34];
                     buttonInteraction = interaction;
-                    if (!(buttonInteraction.customId == 'stopCurrentSound')) return [3, 26];
+                    if (!(buttonInteraction.customId == 'stopCurrentSound')) return [3, 28];
                     kaamelottAudio.stopAudio(player);
                     return [4, buttonInteraction.reply({ content: 'Zuuuuuuuut !', ephemeral: true })];
-                case 25:
-                    _b.sent();
-                    return [3, 31];
-                case 26:
-                    if (!buttonInteraction.customId.startsWith('replayAudio_')) return [3, 30];
-                    return [4, buttonInteraction.reply({ content: 'Swing it baby !', ephemeral: true })];
                 case 27:
+                    _b.sent();
+                    return [3, 33];
+                case 28:
+                    if (!buttonInteraction.customId.startsWith('replayAudio_')) return [3, 32];
+                    return [4, buttonInteraction.reply({ content: 'Swing it baby !', ephemeral: true })];
+                case 29:
                     _b.sent();
                     tempFilePath = buttonInteraction.customId.substring('replayAudio_'.length);
                     filename = fs.readFileSync(tempFilePath, 'utf8');
                     logger_1.logger.debug("Replaying file " + filename);
                     return [4, buttonInteraction.editReply({ content: 'Replaying file ' + filename })];
-                case 28:
+                case 30:
                     _b.sent();
                     return [4, kaamelottAudio.playAudio(buttonInteraction, player, getCacheFilePath(filename, MEDIA_TYPE.sounds))];
-                case 29:
+                case 31:
                     _b.sent();
-                    return [3, 31];
-                case 30:
+                    return [3, 33];
+                case 32:
                     if (buttonInteraction.customId == 'clearsoundsCache') {
                         clearCache(interaction, MEDIA_TYPE.sounds, ".mp3");
                     }
                     else if (buttonInteraction.customId == 'cleargifsCache') {
                         clearCache(interaction, MEDIA_TYPE.gifs, ".gif");
                     }
-                    _b.label = 31;
-                case 31: return [2];
-                case 32: return [2];
+                    _b.label = 33;
+                case 33: return [2];
+                case 34: return [2];
             }
         });
     }); });

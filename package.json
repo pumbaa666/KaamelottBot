@@ -17,6 +17,7 @@
 		"compile": "tsc -p tsconfig.json",
 		"start": "node ./bin/src/bot.js", "ts": "npm run compile && npm run start",
 		"docker-up": "docker-compose up --detach --build", "dup": "npm run docker-up",
+		"version": "cat conf/auth-prod.json | grep bot-version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d ' '", "v": "npm run version",
 		
 		"docker-build": "docker build . -t pumbaa666/kaamelott_bot", "db": "npm run docker-build",
 		"docker-run": "docker run --name kaamelott_bot -d pumbaa666/kaamelott_bot", "drun": "npm run docker-run", "dr": "npm run drun",

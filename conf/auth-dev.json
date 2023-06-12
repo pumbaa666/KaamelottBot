@@ -1,4 +1,5 @@
 {
     "client_id": "YOUR-CLIENT-ID",
-    "token": "YOUR-APPLICATION-TOKEN"
+    "token": "YOUR-APPLICATION-TOKEN",
+    "botVersion": "2.3.0"
 }
