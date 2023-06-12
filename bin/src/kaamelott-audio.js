@@ -142,7 +142,7 @@ function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory,
     if (warning === void 0) { warning = ""; }
     if (options === void 0) { options = null; }
     return __awaiter(this, void 0, void 0, function () {
-        var filename, fullUrl, filepath, response, error_1, reply, optionsInline, tmpFilePath, rowButtons;
+        var filename, fullUrl, filepath, response, error_1, author, authorName, authorAvatar, optionsInline, reply, tmpFilePath, rowButtons;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -181,7 +181,14 @@ function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory,
                     _a.sent();
                     return [2];
                 case 10:
-                    logger_1.logger.debug("Sending embed to user. Warning : " + warning + ", options : ", options);
+                    author = interaction.member;
+                    authorName = author.displayName;
+                    authorAvatar = author.displayAvatarURL({ forceStatic: true });
+                    optionsInline = "";
+                    if (options != null) {
+                        optionsInline = options.map(function (option) { return option.value; }).join(", ").toLowerCase() + " (in " + options.map(function (option) { return option.name; }).join(", ").toLowerCase() + ")";
+                    }
+                    logger_1.logger.debug("Sending public reply from " + authorName + ", options : " + optionsInline + (warning ? ", Warning : " + warning : ""));
                     reply = new discord_js_1.EmbedBuilder()
                         .setColor(0x0099FF)
                         .setTitle((sound.file).substring(0, 255))
@@ -189,9 +196,8 @@ function replyWithMediaAudio(interaction, player, sound, silent, cacheDirectory,
                         .setAuthor({ name: 'by Pumbaa', iconURL: 'https://avatars.githubusercontent.com/u/34394718?v=4', url: 'https://github.com/pumbaa666' })
                         .setDescription(sound.title)
                         .addFields({ name: 'Episode', value: sound.episode, inline: true }, { name: 'Personnages', value: sound.character, inline: true })
-                        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icons/icon-32x32.png' });
+                        .setFooter({ text: authorName, iconURL: authorAvatar });
                     if (options != null) {
-                        optionsInline = options.map(function (option) { return option.value; }).join(", ").toLowerCase() + " (in " + options.map(function (option) { return option.name; }).join(", ").toLowerCase() + ")";
                         reply.addFields({ name: 'Mot-clé', value: optionsInline, inline: false });
                     }
                     if (warning != "") {

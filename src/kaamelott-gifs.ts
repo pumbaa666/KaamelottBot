@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as superagent from "superagent";
 
-import { EmbedBuilder, AttachmentBuilder } from "discord.js";
+import { GuildMember, EmbedBuilder, AttachmentBuilder } from "discord.js";
 import type { CommandInteraction, CommandInteractionOption } from "discord.js";
 
 import { logger } from "../conf/logger";
@@ -14,7 +14,7 @@ import * as utils from './utils';
 
 export async function searchAndReplyGif(interaction: CommandInteraction, gifs: Gif[], cacheDirectory: string) {
     await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"}); // TODO ajouter un gif animé qui tourne pour faire patienter le user.
-    logger.debug("Allo?");
+    // TODO effacer ce texte quand on a trouvé le gif
 
     // Get the options and subcommands (if any)
     let options: CommandInteractionOption[] = [...interaction.options.data]; // Copy the array because I can't modify the original one // https://stackoverflow.com/questions/59115544/cannot-delete-property-1-of-object-array
@@ -120,8 +120,16 @@ async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cach
         return;
     }
 
-    logger.debug("Sending embed to user. Warning : " + warning + ", options : ", options);
-
+    const author: GuildMember = interaction.member as GuildMember;
+    const authorName: string = author.displayName;
+    const authorAvatar: string = author.displayAvatarURL({ forceStatic: true }); // https://stackoverflow.com/questions/60788648/avatarurl-and-displayavatarurl-doesnt-work-on-my-bot-discord-javascript
+    
+    let optionsInline = "";
+    if(options != null) {
+        optionsInline = options.map(option => option.value).join(", ").toLowerCase() + " (in " + options.map(option => option.name).join(", ").toLowerCase() + ")"; // On concatène les options
+    }
+    // https://discordjs.guide/popular-topics/embeds.html#using-the-embed-constructor
+    logger.debug("Sending public reply from " + authorName + ", options : " + optionsInline + (warning?", Warning : " + warning: ""));
     // https://discordjs.guide/popular-topics/embeds.html#attaching-images
     const gifFile = new AttachmentBuilder(filepath);
     const reply = new EmbedBuilder()
@@ -136,10 +144,9 @@ async function replyWithMediaGif(interaction: CommandInteraction, gif: Gif, cach
         )
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         .setImage('attachment://' + filename)
-        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icons/icon-32x32.png' });
-    
+        .setFooter({ text: authorName, iconURL: authorAvatar });
+
     if(options != null) {
-        const optionsInline = options.map(option => option.value).join(", ").toLowerCase() + " (in " + options.map(option => option.name).join(", ").toLowerCase() + ")"; // On concatène les options
         reply.addFields({ name: 'Mot-clé', value: optionsInline, inline: false});
     }
     if(warning != "") {

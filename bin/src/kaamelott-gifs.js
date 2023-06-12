@@ -61,7 +61,6 @@ function searchAndReplyGif(interaction, gifs, cacheDirectory) {
                 case 0: return [4, interaction.reply({ content: "Jamais de bougie dans une librairie !!!" })];
                 case 1:
                     _c.sent();
-                    logger_1.logger.debug("Allo?");
                     options = __spreadArray([], interaction.options.data, true);
                     logger_1.logger.info('Searching gifs with : ' + options.map(function (opt) { return opt.name + ":" + opt.value; }).join(", "));
                     if (options.length == 0) {
@@ -136,7 +135,7 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
     if (warning === void 0) { warning = ""; }
     if (options === void 0) { options = null; }
     return __awaiter(this, void 0, void 0, function () {
-        var filename, fullUrl, filepath, response, error_1, gifFile, reply, optionsInline;
+        var filename, fullUrl, filepath, response, error_1, author, authorName, authorAvatar, optionsInline, gifFile, reply;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -167,7 +166,14 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
                     _a.sent();
                     return [2];
                 case 6:
-                    logger_1.logger.debug("Sending embed to user. Warning : " + warning + ", options : ", options);
+                    author = interaction.member;
+                    authorName = author.displayName;
+                    authorAvatar = author.displayAvatarURL({ forceStatic: true });
+                    optionsInline = "";
+                    if (options != null) {
+                        optionsInline = options.map(function (option) { return option.value; }).join(", ").toLowerCase() + " (in " + options.map(function (option) { return option.name; }).join(", ").toLowerCase() + ")";
+                    }
+                    logger_1.logger.debug("Sending public reply from " + authorName + ", options : " + optionsInline + (warning ? ", Warning : " + warning : ""));
                     gifFile = new discord_js_1.AttachmentBuilder(filepath);
                     reply = new discord_js_1.EmbedBuilder()
                         .setColor(0x0099FF)
@@ -177,9 +183,8 @@ function replyWithMediaGif(interaction, gif, cacheDirectory, warning, options) {
                         .setDescription(gif.quote)
                         .addFields({ name: 'Perso principal', value: gif.characters.join(", "), inline: true }, { name: 'Autres perso', value: gif.characters_speaking.join(", "), inline: true })
                         .setImage('attachment://' + filename)
-                        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icons/icon-32x32.png' });
+                        .setFooter({ text: authorName, iconURL: authorAvatar });
                     if (options != null) {
-                        optionsInline = options.map(function (option) { return option.value; }).join(", ").toLowerCase() + " (in " + options.map(function (option) { return option.name; }).join(", ").toLowerCase() + ")";
                         reply.addFields({ name: 'Mot-clé', value: optionsInline, inline: false });
                     }
                     if (warning != "") {

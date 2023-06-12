@@ -36,6 +36,7 @@ type Character = {
 
 export async function searchAndReplyAudio(interaction: CommandInteraction, sounds: Sound[], player: AudioPlayer, cacheDirectory: string) {
     await interaction.reply({ content: "Jamais de bougie dans une librairie !!!"}); // TODO ajouter un gif animé qui tourne pour faire patienter le user.
+    // TODO effacer ce texte quand on a fini de jouer le son.
     
     // Get the options and subcommands (if any)
     let silent = false;
@@ -151,9 +152,17 @@ async function replyWithMediaAudio(interaction: CommandInteraction, player: Audi
         await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl);
         return;
     }
+    
+    const author: GuildMember = interaction.member as GuildMember;
+    const authorName: string = author.displayName;
+    const authorAvatar: string = author.displayAvatarURL({ forceStatic: true }); // https://stackoverflow.com/questions/60788648/avatarurl-and-displayavatarurl-doesnt-work-on-my-bot-discord-javascript
 
+    let optionsInline = "";
+    if(options != null) {
+        optionsInline = options.map(option => option.value).join(", ").toLowerCase() + " (in " + options.map(option => option.name).join(", ").toLowerCase() + ")"; // On concatène les options
+    }
     // https://discordjs.guide/popular-topics/embeds.html#using-the-embed-constructor
-    logger.debug("Sending embed to user. Warning : " + warning + ", options : ", options);
+    logger.debug("Sending public reply from " + authorName + ", options : " + optionsInline + (warning?", Warning : " + warning: ""));
     const reply = new EmbedBuilder()
         .setColor(0x0099FF)
         .setTitle((sound.file).substring(0, 255))
@@ -166,11 +175,9 @@ async function replyWithMediaAudio(interaction: CommandInteraction, player: Audi
         )
         // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
         // .setImage('https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icon.png')
-        .setFooter({ text: 'Longue vie à Kaamelott !', iconURL: 'https://raw.githubusercontent.com/pumbaa666/KaamelottBot/master/resources/icons/icon-32x32.png' }
-    );
+        .setFooter({ text: authorName, iconURL: authorAvatar });
     
     if(options != null) {
-        const optionsInline = options.map(option => option.value).join(", ").toLowerCase() + " (in " + options.map(option => option.name).join(", ").toLowerCase() + ")"; // On concatène les options
         reply.addFields({ name: 'Mot-clé', value: optionsInline, inline: false});
     }
     if(warning != "") {
