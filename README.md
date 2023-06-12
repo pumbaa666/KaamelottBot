@@ -17,7 +17,8 @@ For the developers :
 - - [Installing the Server with Docker](#own-server-with-docker)
 - - [Installing the Server _Alamano©_](#own-server-alamano)
 - - [Launching the Server](#launching-server)
-
+- [Changelog](#changlog)
+- [TODO](#todo)
 
 <a name="what-is-it">What is it</a>
 ---
@@ -281,3 +282,35 @@ sudo systemctl daemon-reload # Required if you modified the .service file, not i
 ```
 
 and then : `sudo systemctl start kaamelott_bot.service`
+
+
+<a name="changelog">Changelog</a>
+---
+
+- 2023.06.12 - Dockerization
+Create a Docker version to run the app as a container instead of as a service.
+
+- 2023.06.07 - Typescript
+Translated Node.js to Typescript.
+
+- 2023.x.y - v2
+Major improvement, using Discord.js v2 regarding :
+- - Command integration and call
+- - Response design
+- - Button to interact with (replay, pause)
+- - Gifs !
+- - Admin commands
+
+- 2020.x.y - v1
+First draft without the custom commands and options, Discord.js is not in v2 yet.
+
+<a name="todo">TODO</a>
+---
+
+Here is the list of futur improvements. If this is empty it means the bot is perfect \o/
+
+- implement fallback urls (kaamelot-soundboard, kaamelott-gifboard)
+- add sounds from pending PR https://github.com/2ec0b4/kaamelott-soundboard/pulls
+- list all the characters and propose them as option-value when looking for Characters. Same for titles ? Same for gifs.
+- add a "please wait" (animated gif) when searching a media. Clean the response when showing the result (animated gif and message "Bougie")
+- log the connection of the bot to API

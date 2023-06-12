@@ -23,7 +23,7 @@ COPY    conf    $APP_ROOT/conf
 COPY    resources $APP_ROOT/resources
 COPY    gifs/gifs.json $APP_ROOT/gifs/gifs.json
 COPY    sounds/sounds.json $APP_ROOT/sounds/sounds.json
-# # If you to include the sounds and gifs, uncomment the following lines. Beware, it will increase the image size !
+# # If you want to include the sounds and gifs, uncomment the following lines. Beware, it will increase the image size !
 # COPY    gifs $APP_ROOT/gifs
 # COPY    sounds $APP_ROOT/sounds
 COPY    package*.json $APP_ROOT/
