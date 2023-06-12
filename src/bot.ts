@@ -314,15 +314,17 @@ function startClient(player: AudioPlayer) {
         if (interaction.isChatInputCommand()) {
             const commandInteraction = interaction as CommandInteraction;
             
-            // const sassyFile = new File("./resources/eye-on-you.gif", "eye-on-you.gif");
-            const filename = "eye-on-you.gif";
-            const sassyFile = new AttachmentBuilder("./resources/"+filename);
+            const author: GuildMember = interaction.member as GuildMember;
+            const authorName: string = author.displayName;
+    
+            const filename = "arthur-allez-crever.gif";
+            const sassyFile = new AttachmentBuilder("./resources/gifs/"+filename);
             sassyFile.setName(filename);
             const sassyReply = new EmbedBuilder()
-                .setTitle("Merci de m'appeler pour rien !! 😡")
-                .setDescription("Tu vois ce que tu me fais coder ???")
+                .setTitle("Ah putain, ouais en fait vous m'avez fait lever pour rien ! 😡")
+                .setDescription("Je vous le dis, je vais vous faire descendre en cabane avec un pichet de flotte un bout de pain sec. Je suis désolé, je suis démuni, je vois pas d'autre solution.")
                 .setImage("attachment://"+filename)
-                .setFooter({ text: 'Je te crache au visage, tient ! Pteuh !' })
+                .setFooter({ text: 'Puis je pense que ça vous donnera un peu l\'occasion de réfléchir un peu à tout ça tête reposée. Prendre un peu de recul sur les choses parce que, '+authorName+', on ne réveille pas son bot en pleine nuit pour des conneries, encore moins deux fois de suite.' })
                 
             switch(commandInteraction.commandName) {
                 case 'ping': await commandInteraction.reply('Pong!'); break;

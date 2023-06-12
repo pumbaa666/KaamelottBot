@@ -367,20 +367,22 @@ function startClient(player) {
         logger_1.logger.info("KaamelottBot is live ! C'est quoi que t'as pas compris ?");
     });
     client.on("interactionCreate", function (interaction) { return __awaiter(_this, void 0, void 0, function () {
-        var commandInteraction, filename, sassyFile, sassyReply, _a, buttonInteraction, tempFilePath, filename;
+        var commandInteraction, author, authorName, filename, sassyFile, sassyReply, _a, versionReply, version, reply, buttonInteraction, tempFilePath, filename;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    if (!interaction.isChatInputCommand()) return [3, 24];
+                    if (!interaction.isChatInputCommand()) return [3, 26];
                     commandInteraction = interaction;
-                    filename = "eye-on-you.gif";
-                    sassyFile = new discord_js_2.AttachmentBuilder("./resources/" + filename);
+                    author = interaction.member;
+                    authorName = author.displayName;
+                    filename = "arthur-allez-crever.gif";
+                    sassyFile = new discord_js_2.AttachmentBuilder("./resources/gifs/" + filename);
                     sassyFile.setName(filename);
                     sassyReply = new discord_js_2.EmbedBuilder()
-                        .setTitle("Merci de m'appeler pour rien !! 😡")
-                        .setDescription("Tu vois ce que tu me fais coder ???")
+                        .setTitle("Ah putain, ouais en fait vous m'avez fait lever pour rien ! 😡")
+                        .setDescription("Je vous le dis, je vais vous faire descendre en cabane avec un pichet de flotte un bout de pain sec. Je suis désolé, je suis démuni, je vois pas d'autre solution.")
                         .setImage("attachment://" + filename)
-                        .setFooter({ text: 'Je te crache au visage, tient ! Pteuh !' });
+                        .setFooter({ text: 'Puis je pense que ça vous donnera un peu l\'occasion de réfléchir un peu à tout ça tête reposée. Prendre un peu de recul sur les choses parce que, ' + authorName + ', on ne réveille pas son bot en pleine nuit pour des conneries, encore moins deux fois de suite.' });
                     _a = commandInteraction.commandName;
                     switch (_a) {
                         case 'ping': return [3, 1];
@@ -388,20 +390,21 @@ function startClient(player) {
                         case 'kaamelott-gifs': return [3, 5];
                         case 'kaamelott-refresh': return [3, 7];
                         case 'kaamelott-clear': return [3, 17];
+                        case 'kaamelott-version': return [3, 23];
                     }
-                    return [3, 23];
+                    return [3, 25];
                 case 1: return [4, commandInteraction.reply('Pong!')];
                 case 2:
                     _b.sent();
-                    return [3, 23];
+                    return [3, 25];
                 case 3: return [4, kaamelottAudio.searchAndReplyAudio(commandInteraction, sounds, player, getCacheFilePath("", MEDIA_TYPE.sounds))];
                 case 4:
                     _b.sent();
-                    return [3, 23];
+                    return [3, 25];
                 case 5: return [4, kaamelottGifs.searchAndReplyGif(commandInteraction, gifs, getCacheFilePath("", MEDIA_TYPE.gifs))];
                 case 6:
                     _b.sent();
-                    return [3, 23];
+                    return [3, 25];
                 case 7:
                     if (!isBotRefreshing) return [3, 9];
                     return [4, commandInteraction.reply({ content: "Oula, tout doux mon grand, j'suis en plein refresh. Va te chercher un Pastis.", ephemeral: true })];
