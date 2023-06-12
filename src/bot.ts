@@ -5,6 +5,7 @@
 // TODO `systemctl status kaamelott_bot` montre les logs depuis trop longtemps, il faut les remettre à 0
 // TODO intégrer les pull request en attente : https://github.com/2ec0b4/kaamelott-soundboard/pulls
 // TODO proposer les ajouts de crystal en PR
+// TODO détecter la connection du bot discord à l'API et afficher un message dans les logs
 
 import * as path from 'path';
 import * as fs from 'fs';

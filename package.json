@@ -14,9 +14,17 @@
 		"node": ">=19.0.0"
 	},
 	"scripts": {
-		"start": "node ./bin/src/bot.js",
-		"compile": "tsc",
-		"ts": "npm run compile && npm run start"
+		"compile": "tsc -p tsconfig.json",
+		"start": "node ./bin/src/bot.js", "ts": "npm run compile && npm run start",
+		"docker-up": "docker-compose up --detach --build", "dup": "npm run docker-up",
+		
+		"docker-build": "docker build . -t pumbaa666/kaamelott_bot", "db": "npm run docker-build",
+		"docker-run": "docker run --name kaamelott_bot -d pumbaa666/kaamelott_bot", "drun": "npm run docker-run", "dr": "npm run drun",
+		"docker-exec": "docker exec -ti kaamelott_bot /bin/bash", "dexec": "npm run docker-exec", "de": "npm run dexec",
+		"docker-rm": "docker stop kaamelott_bot && docker rm kaamelott_bot", "drm": "npm run docker-rm",
+		"docker-logs": "docker logs -f kaamelott_bot", "dlog": "npm run docker-logs", "dl": "npm run dlog",
+		"docker-rmi": "npm run docker-rm || true && docker rmi pumbaa666/kaamelott_bot", "drmi": "npm run docker-rmi",
+		"kill-all": "docker stop $(docker ps -aq) && docker rm $(docker ps -aq)"
 	},
 	"dependencies": {
 		"@discordjs/voice": "^0.15.0",

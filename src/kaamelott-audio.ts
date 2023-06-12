@@ -1,4 +1,5 @@
 // https://discordjs.guide/voice/audio-player.html#taking-action-within-the-error-handler
+// TODO quand on recherche dans Perso, proposer une liste de persos venant du fichier sounds.json. Pareil pour Titre. La même chose dans gifs.
 
 import * as path from 'path';
 import * as fs from 'fs';
@@ -145,7 +146,10 @@ async function replyWithMediaAudio(interaction: CommandInteraction, player: Audi
             fs.writeFileSync(filepath, response.body);
         }
     } catch(error) {
-        logger.warn("Error while trying to cache file at " + filepath + " : ", error);
+        // TODO fallback here
+        logger.warn("Error while trying to cache audio file at " + filepath + " : ", error);
+        await interaction.editReply("Je n'ai pas réussi à télécharger le fichier " + fullUrl);
+        return;
     }
 
     // https://discordjs.guide/popular-topics/embeds.html#using-the-embed-constructor
