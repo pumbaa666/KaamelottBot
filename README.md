@@ -318,3 +318,4 @@ Here is the list of futur improvements. If this is empty it means the bot is per
 - add a Public option to kaamelott-audio and kaamelott-gifs. Set to false it only show the response to the user.
 - log the connection of the bot to API
 - add a Bot version. As a npm command (for devs) and as a discord command.
+- add a command to get the top-20 of most-used words, by characters
