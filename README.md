@@ -76,6 +76,7 @@ __That's all, folks !__ The rest of the giberish in this document is for program
 
 <a name="how-it-works">How does it work</a>
 ---
+**MP3**
 When triggered with `/kaamelott-audio` the bot will use the following words to search for an audio file who's name contains it.
 
 The files comes from [kaamelott-soundboard GitHub](https://github.com/2ec0b4/kaamelott-soundboard/tree/master/sounds) (a copy exists on [my github](https://github.com/pumbaa666/KaamelottBot/tree/master/sounds))
@@ -86,8 +87,9 @@ It take a random quote from the result, cache the audio locally and play the sou
 
 The cached files are stored under `KaamelottBot/sounds/`
 
-You need write privileges on this folder (at least `755`) `chmod -R 755 KaamelottBot/sounds/`.
+You need write privileges on this folder (at least `755`) `chmod -R 755 ./sounds/ ./gifs/`.
 
+**Gifs**
 Same goes for animated Gifs with the command `/kaamelott-gifs`.
 
 The project as been forked from [kaamelott-gifboard](https://github.com/kaamelott-gifboard/kaamelott-gifboard) on GitHub.
@@ -111,9 +113,13 @@ Open https://discord.com on your browser and login to your account
 
 Create a new Application on your [Developper panel](https://discord.com/developers/applications).
 
+![launch-command](.readme-screenshots/06-discord-new-app.png)
+
 **General Information**
 
 Note the `application id`, it's your `client_id` (they are replicated in tab `OAuth2/General`).
+
+![launch-command](.readme-screenshots/07-token.png)
 
 **Bot**
 
@@ -139,6 +145,7 @@ Enable `Presence intent`, `Server members intent`, `Message content intent`.
 
 [Voice] Connect, Speak
 
+![launch-command](.readme-screenshots/08-bot-permissions.png)
 
 <a name="own-server-with-docker">Installing the Server with Docker</a>
 ---
