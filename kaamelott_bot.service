@@ -1,0 +1,14 @@
+/etc/systemd/system/kaamelott_bot.service
+[Unit]
+Description=Discord Kaamelott Bot
+
+[Service]
+Type=simple
+User=1000
+Group=1000
+ExecStart=~/.nvm/versions/node/v20.19.6/bin/node ~/programmation/KaamelottBot/bin/src/bot.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
