@@ -287,6 +287,9 @@ and then : `sudo systemctl start kaamelott_bot.service`
 <a name="changelog">Changelog</a>
 ---
 
+- 2026.01.05 - Discord update
+Update discord.js dependency version and add DAVE dependency to comply with new Discord API version.
+
 - 2023.06.12 - Dockerization
 Create a Docker version to run the app as a container instead of as a service.
 
