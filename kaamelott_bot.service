@@ -1,13 +1,15 @@
-/etc/systemd/system/kaamelott_bot.service
 [Unit]
 Description=Discord Kaamelott Bot
+After=network.target
 
 [Service]
 Type=simple
-User=1000
-Group=1000
+User=pumbaa
+Group=pumbaa
+WorkingDirectory=/home/pumbaa/programmation/KaamelottBot
 ExecStart=~/.nvm/versions/node/v20.19.6/bin/node ~/programmation/KaamelottBot/bin/src/bot.js
 Restart=on-failure
+Environment=NODE_ENV=production
 
 [Install]
 WantedBy=multi-user.target
