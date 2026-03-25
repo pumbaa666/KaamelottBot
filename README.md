@@ -273,7 +273,7 @@ First time only :
 which node # Note the absolute path of the node executable
 pwd # Note the absolute path of the KaamelotBot directory
 # You will use them in the following file :
-sudo cp KaamelottBot/resources/kaamelott_bot.service /etc/systemd/system/kaamelott_bot.service
+sudo cp KaamelottBot/kaamelott_bot.service /etc/systemd/system/kaamelott_bot.service
 sudo vi /etc/systemd/system/kaamelott_bot.service
     # Put the values in ExecStart. Example :
     # ExecStart=/home/USER/.nvm/versions/node/v19.7.0/bin/node /home/USER/programmation/node/KaamelottBot/bin/src/bot.js
