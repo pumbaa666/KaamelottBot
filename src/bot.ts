@@ -392,7 +392,7 @@ function startClient(player: AudioPlayer) {
 
 function getCacheFilePath(filename: string, type: MEDIA_TYPE) {
     const currentFilePath = path.resolve(__dirname);
-    const cacheDirectory = currentFilePath + "/../../"+type+"/"; // One level up more since the js code is in bin/, now
+    const cacheDirectory = currentFilePath + "/../../"+type+"/"; // One level up more since the js code is in bin/, now # TODO mettre les gifs et sons dans un dossier cache
     const filepath = cacheDirectory + filename;
     return filepath;
 }
